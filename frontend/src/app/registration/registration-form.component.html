@@ -4,7 +4,7 @@
       <mat-label>First name</mat-label>
       <input matInput formControlName="firstname" (input)="onInput('firstname', $event)" [matAutocomplete]="autoFirstname">
       <mat-autocomplete #autoFirstname="matAutocomplete" (optionSelected)="applySuggestion('firstname', $event.option.value)">
-        <mat-option *ngFor="let s of suggestions$()">{{s}}</mat-option>
+        <mat-option [value]="s" *ngFor="let s of suggestions$()">{{s}}</mat-option>
       </mat-autocomplete>
     </mat-form-field>
 
@@ -40,7 +40,7 @@
     <mat-label>Country</mat-label>
     <input matInput formControlName="country" (input)="onInput('country', $event)" [matAutocomplete]="autoCountry">
     <mat-autocomplete #autoCountry="matAutocomplete" (optionSelected)="applySuggestion('country', $event.option.value)">
-      <mat-option *ngFor="let s of suggestions$()">{{s}}</mat-option>
+      <mat-option [value]="s" *ngFor="let s of suggestions$()">{{s}}</mat-option>
     </mat-autocomplete>
   </mat-form-field>
 

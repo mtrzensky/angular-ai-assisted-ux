@@ -31,19 +31,17 @@ router.post("/analyze-image", upload.single("image"), async (req, res) => {
     // If your LLM supports image inputs, you can send the base64 data,
     // or use a vision model adapter. Here we send base64 to the LLM endpoint.
     const b64 = req.file.buffer.toString("base64");
-    const prompt = `You receive a base64-encoded image (as data). Identify visible properties like hairColor, approximate age range, and short descriptive tags. Return JSON only.`;
+    const prompt = `You receive a base64-encoded image (as data). 
+    Identify visible properties: 
+    - Hair Color as "hairColor"
+    - Sex as "sex" with possible values "male, female" + "unknown" if you can't decide
+    - Approximate age (as number) as "age"
+    - Short descriptive tags as "tags". 
+    
+    Return JSON only. No unnecessary whitespaces or line returns`;
 
-    const result = await callLLM('bakllava', prompt, { image_base64: b64 });
-    const resultObj = result as { output?: string; text?: string };
-    const textOut = (resultObj.output ?? resultObj.text) || JSON.stringify(resultObj);
-    const jsonMatch = textOut.match(/{[\s\S]*}/);
-    let parsed = {};
-    if (jsonMatch) {
-      parsed = JSON.parse(jsonMatch[0]);
-    } else {
-      parsed = { notes: textOut };
-    }
-    res.json({ parsed });
+    const result = await callLLM('llava:13b', prompt, { images: [b64] });
+    res.json({ parsed: JSON.parse(result) });
   } catch (err: any) {
     console.error(err);
     res.status(500).json({ error: err.message });
