@@ -1,14 +1,41 @@
-import fetch from "node-fetch";
+const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
 
-const LLM_URL = process.env.LLM_URL || "http://localhost:11434";
+/**
+ * Calls a locally running Ollama model with the given prompt.
+ * @param model Name of the ollama model, e.g. "llama3", "mistral", "codellama"
+ * @param prompt The text prompt you want to send
+ * @param options Additional options (e.g. temperature, max tokens, etc.)
+ */
+export async function callLLM(model: string, prompt: string, options: Record<string, any> = {}): Promise<string> {
+  if (typeof prompt !== "string") {
+    throw new Error(`Ollama requires "prompt" to be a string. Got: ${typeof prompt}`);
+  }
 
-export async function callLLM(prompt: string, options: any = {}) {
-  const body = { prompt, ...options };
-  const res = await fetch(`${LLM_URL}/api/generate`, {
+  const body = {
+    model,
+    prompt,
+    stream: false,
+    format: 'json',
+    ...options
+  };
+
+  console.log('----- CALL LLM BODY -----');
+  console.log(JSON.stringify(body));
+
+  const res = await fetch(`${OLLAMA_URL}/api/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body)
   });
-  if (!res.ok) throw new Error(`LLM error: ${res.status}`);
-  return res.json();
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Ollama error ${res.status}: ${text}`);
+  }
+
+  console.log('----- RETRIEVE RESPONSE -----');
+  const ollamaJsonResult = await res.json();
+  console.log(ollamaJsonResult);
+
+  return ollamaJsonResult.response;
 }
