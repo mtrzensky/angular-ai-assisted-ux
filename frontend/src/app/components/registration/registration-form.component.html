@@ -68,3 +68,9 @@
     <button mat-flat-button color="primary" type="submit">Submit</button>
   </div>
 </form>
+
+@if (isProcessing()) {
+    <div class="processing-overlay">
+      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+    </div>
+}

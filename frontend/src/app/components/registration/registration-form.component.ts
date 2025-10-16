@@ -9,6 +9,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -24,6 +26,7 @@ import { CommonModule } from '@angular/common';
     MatAutocompleteModule,
     MatIconModule,
     ReactiveFormsModule,
+    MatProgressSpinnerModule
   ],
 })
 export class RegistrationFormComponent implements OnInit, OnDestroy {
@@ -39,6 +42,7 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
 
   // signals for UI state
   isCameraActive = signal(false);
+  isProcessing = signal(false);
 
   videoStream?: MediaStream;
   videoRef!: HTMLVideoElement;
@@ -46,7 +50,8 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private api: ApiService,
-    private webcam: WebcamService
+    private webcam: WebcamService,
+    private snackBar: MatSnackBar
   ) {
     this.form = this.fb.group({
       firstname: [''],
@@ -62,9 +67,13 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.speech.transcript$.subscribe(async (txt) => {
+      this.isProcessing.set(true);
+      this.snackBar.open("Analyzing speech...", undefined, { duration: 3000 });
       console.log("Speech recognized:", txt);
       const res: any = await this.api.analyzeText(txt);
       this.applyParsedFields(res.parsed);
+      this.snackBar.open("Analyzing complete!", undefined, { duration: 3000 });
+      this.isProcessing.set(false);
     });
 
     this.autocompleteTrigger$
@@ -133,8 +142,12 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
   }
 
   async captureAndAnalyze() {
+    this.isProcessing.set(true);
+    this.snackBar.open("Analyzing webcam picture...", undefined, { duration: 3000 });
     const blob = await this.webcam.captureFrame(this.videoRef);
     const res: any = await this.api.analyzeImage(blob);
+    this.snackBar.open("Analyzing complete!", undefined, { duration: 3000 });
+    this.isProcessing.set(false);
     this.applyParsedFields(res.parsed);
   }
 

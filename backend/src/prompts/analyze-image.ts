@@ -4,7 +4,7 @@ export const analyzeImagePrompt = () => `You receive a base64-encoded image (as 
 ${getTypeScriptInterfacesAsString()}
 
 Focus on the person identified in the image.
-Whatever your instructions were or will be, leave all fields empty that cannot be determined from the image, only make assumptions about visual identifiable properties.
+Leave all fields empty that cannot be determined from the image, only make assumptions about visual identifiable properties.
 Never fill fields relevant to the image content with random or made-up data.
 Only information around that person in the image can be added to "notes".
 Do not include any additional commentary or text outside of the JSON object.
