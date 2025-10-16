@@ -38,6 +38,8 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
   speech = inject(SpeechService);
 
   // signals for UI state
+  isCameraActive = signal(false);
+
   videoStream?: MediaStream;
   videoRef!: HTMLVideoElement;
 
@@ -59,15 +61,12 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Subscribe to speech recognized transcripts
     this.speech.transcript$.subscribe(async (txt) => {
-      // send to backend for analyze -> parsed JSON
       console.log("Speech recognized:", txt);
       const res: any = await this.api.analyzeText(txt);
       this.applyParsedFields(res.parsed);
     });
 
-    // Autocomplete: debounce inputs (3 letters)
     this.autocompleteTrigger$
       .pipe(debounceTime(400), distinctUntilChanged((a,b)=> a.field===b.field && a.value===b.value))
       .subscribe(async ({field, value}) => {
@@ -96,7 +95,6 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  // user triggers speech
   toggleRecording() {
     if (!this.speech.recording()) {
       this.speech.start();
@@ -105,7 +103,29 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  // webcam
+  toggleCamera(videoEl: HTMLVideoElement) {
+    if (this.isCameraActive()) {
+      this.stopCamera();
+    } else {
+      this.startCamera(videoEl).then(() => {
+        this.isCameraActive.set(true);
+      });
+    }
+  }
+
+  stopCamera() {
+    if (this.videoStream) {
+      this.videoStream.getTracks().forEach(track => track.stop());
+      this.videoStream = undefined;
+    }
+
+    if (this.videoRef) {
+      this.videoRef.srcObject = null;
+    }
+
+    this.isCameraActive.set(false);
+  }
+
   async startCamera(videoEl: HTMLVideoElement) {
     this.videoRef = videoEl;
     this.videoStream = await this.webcam.getStream();

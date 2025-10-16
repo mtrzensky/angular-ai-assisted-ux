@@ -58,7 +58,9 @@
     <div class="webcam">
       <video #video width="320" height="240" autoplay muted></video>
       <div class="webcam-controls">
-        <button mat-stroked-button type="button" (click)="startCamera(video)">Start Camera</button>
+        <button mat-stroked-button type="button" (click)="toggleCamera(video)">
+          {{ isCameraActive() ? 'Stop Camera' : 'Start Camera' }}
+        </button>
         <button mat-stroked-button type="button" (click)="captureAndAnalyze()">Capture & Analyze</button>
       </div>
     </div>
