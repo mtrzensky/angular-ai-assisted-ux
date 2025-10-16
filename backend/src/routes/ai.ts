@@ -14,6 +14,8 @@ router.post("/analyze-text", async (req, res) => {
 
     const prompt = analyzeTextPrompt(text);
 
+    
+
     const result = await callLLM('mistral', prompt);
     res.json({ parsed: JSON.parse(result) });
   } catch (err: any) {

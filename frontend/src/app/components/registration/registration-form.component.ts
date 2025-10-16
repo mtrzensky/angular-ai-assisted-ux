@@ -87,9 +87,8 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
   }
 
   applyParsedFields(parsed: any) {
-    // merge parsed fields into form; only set what exists
     Object.keys(parsed || {}).forEach(k => {
-      if (this.form.controls[k]) {
+      if (this.form.controls[k] && parsed[k] !== null) {
         this.form.controls[k].setValue(parsed[k]);
       }
     });
