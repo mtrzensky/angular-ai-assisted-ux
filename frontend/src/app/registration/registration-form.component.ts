@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../services/api.service';
 import { SpeechService } from '../services/speech.service';
@@ -28,19 +28,22 @@ import { CommonModule } from '@angular/common';
 })
 export class RegistrationFormComponent implements OnInit, OnDestroy {
   form: FormGroup;
+
   suggestions$ = signal<string[]>([]);
+
   private destroy$ = new Subject<void>();
+
   private autocompleteTrigger$ = new Subject<{field:string, value:string}>();
 
+  speech = inject(SpeechService);
+
   // signals for UI state
-  recording = signal(false);
   videoStream?: MediaStream;
   videoRef!: HTMLVideoElement;
 
   constructor(
     private fb: FormBuilder,
     private api: ApiService,
-    private speech: SpeechService,
     private webcam: WebcamService
   ) {
     this.form = this.fb.group({
@@ -59,6 +62,7 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
     // Subscribe to speech recognized transcripts
     this.speech.transcript$.subscribe(async (txt) => {
       // send to backend for analyze -> parsed JSON
+      console.log("Speech recognized:", txt);
       const res: any = await this.api.analyzeText(txt);
       this.applyParsedFields(res.parsed);
     });
@@ -94,12 +98,11 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
 
   // user triggers speech
   toggleRecording() {
-    if (!this.recording()) {
+    if (!this.speech.recording()) {
       this.speech.start();
     } else {
       this.speech.stop();
     }
-    this.recording.set(!this.recording());
   }
 
   // webcam
