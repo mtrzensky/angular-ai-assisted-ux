@@ -1,8 +1,8 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { ApiService } from '../services/api.service';
-import { SpeechService } from '../services/speech.service';
-import { WebcamService } from '../services/webcam.service';
+import { ApiService } from '../../services/api.service';
+import { SpeechService } from '../../services/speech.service';
+import { WebcamService } from '../../services/webcam.service';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
