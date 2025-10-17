@@ -35,5 +35,6 @@ export const formFieldsUsingSelects: FormField[] = [
   { label: 'Street', formControlName: 'street', placeholder: 'Street', type: 'text' },
   { label: 'City', formControlName: 'city', placeholder: 'City', type: 'text', },
   { label: 'Country', formControlName: 'country', placeholder: 'Country', type: 'text', },
+  { label: 'Hair Color', formControlName: 'hairColor', placeholder: 'Hair Color', type: 'text',},
   { label: 'Notes', formControlName: 'notes', placeholder: 'Additional Notes', type: 'textarea' },
 ];

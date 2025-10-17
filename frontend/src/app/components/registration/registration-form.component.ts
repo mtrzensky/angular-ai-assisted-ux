@@ -9,10 +9,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
-import { FormField, formFieldsUsingText } from '../../../../../models/formData';
+import { FormField, formFieldsUsingSelects, formFieldsUsingText } from '../../../../../models/formData';
 
 @Component({
   selector: 'app-registration-form',
@@ -27,13 +28,14 @@ import { FormField, formFieldsUsingText } from '../../../../../models/formData';
     MatAutocompleteModule,
     MatIconModule,
     ReactiveFormsModule,
+    MatSelectModule,
     MatProgressSpinnerModule
   ],
 })
 export class RegistrationFormComponent implements OnInit, OnDestroy {
   form: FormGroup;
 
-  formFields = formFieldsUsingText;
+  formFields = formFieldsUsingSelects;
 
   suggestions$ = signal<string[]>([]);
 
