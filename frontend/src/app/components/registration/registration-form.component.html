@@ -1,4 +1,4 @@
-<h1>Registration / Demo (Speech & Webcam + LLM autofill)</h1>
+<h1>Profiler Demo</h1>
 <form [formGroup]="form" (ngSubmit)="submit()">
   <div class="row">
     <mat-form-field appearance="outline">
@@ -61,7 +61,9 @@
         <button mat-stroked-button type="button" (click)="toggleCamera(video)">
           {{ isCameraActive() ? 'Stop Camera' : 'Start Camera' }}
         </button>
-        <button mat-stroked-button type="button" (click)="captureAndAnalyze()">Capture & Analyze</button>
+        @if (isCameraActive()) {
+          <button mat-stroked-button type="button" (click)="captureAndAnalyze()">Capture & Analyze</button>
+        }
       </div>
     </div>
 
