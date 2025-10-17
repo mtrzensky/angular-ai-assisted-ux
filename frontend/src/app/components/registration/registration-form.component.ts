@@ -104,7 +104,7 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
   }
 
   toggleRecording() {
-    if (!this.speech.recording()) {
+    if (!this.speech.isRecording()) {
       this.speech.start();
     } else {
       this.speech.stop();
