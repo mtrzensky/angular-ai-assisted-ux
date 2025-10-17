@@ -1,5 +1,5 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Form, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { SpeechService } from '../../services/speech.service';
 import { WebcamService } from '../../services/webcam.service';
@@ -12,6 +12,31 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
+
+export interface FormField {
+  label: string;
+  formControlName: string;
+  placeholder: string;
+  type: 'text' | 'number' | 'textarea' | 'select';
+  autocomplete?: boolean;
+  options?: FormFieldSelectOption[];
+}
+
+export interface FormFieldSelectOption {
+  value: string;
+  label: string;
+}
+
+const formFields: FormField[] = [
+  { label: 'First Name', formControlName: 'firstname', placeholder: 'First Name', type: 'text', autocomplete: true },
+  { label: 'Last Name', formControlName: 'lastname', placeholder: 'Last Name', type: 'text' },
+  { label: 'Age', formControlName: 'age', placeholder: 'Age', type: 'number' },
+  { label: 'Street', formControlName: 'street', placeholder: 'Street', type: 'text' },
+  { label: 'City', formControlName: 'city', placeholder: 'City', type: 'text', },
+  { label: 'Country', formControlName: 'country', placeholder: 'Country', type: 'text', },
+  { label: 'Hair Color', formControlName: 'hairColor', placeholder: 'Hair Color', type: 'text',},
+  { label: 'Notes', formControlName: 'notes', placeholder: 'Additional Notes', type: 'textarea' },
+];
 
 @Component({
   selector: 'app-registration-form',
@@ -31,6 +56,8 @@ import { CommonModule } from '@angular/common';
 })
 export class RegistrationFormComponent implements OnInit, OnDestroy {
   form: FormGroup;
+
+  formFields = formFields;
 
   suggestions$ = signal<string[]>([]);
 
@@ -53,16 +80,15 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
     private webcam: WebcamService,
     private snackBar: MatSnackBar
   ) {
-    this.form = this.fb.group({
-      firstname: [''],
-      lastname: [''],
-      age: [''],
-      street: [''],
-      city: [''],
-      country: [''],
-      hairColor: [''],
-      notes: ['']
+    this.form = this.buildForm(this.formFields);
+  }
+
+  buildForm(formFields: FormField[]) {
+    const group: Record<string, string[]> = {};
+    formFields.forEach(field => {
+      group[field.formControlName] = [''];
     });
+    return this.fb.group(group);
   }
 
   ngOnInit() {

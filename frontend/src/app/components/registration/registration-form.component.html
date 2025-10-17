@@ -1,78 +1,70 @@
 <h1>Profiler Demo</h1>
-<form [formGroup]="form" (ngSubmit)="submit()">
-  <div class="row">
-    <mat-form-field appearance="outline">
-      <mat-label>First name</mat-label>
-      <input matInput formControlName="firstname" (input)="onInput('firstname', $event)" [matAutocomplete]="autoFirstname">
-      <mat-autocomplete #autoFirstname="matAutocomplete" (optionSelected)="applySuggestion('firstname', $event.option.value)">
-        <mat-option [value]="s" *ngFor="let s of suggestions$()">{{s}}</mat-option>
-      </mat-autocomplete>
-    </mat-form-field>
+<form [formGroup]="form" (ngSubmit)="submit()" class="form">
+  <div class="form-segment">
+    @for (formField of formFields; track formField) {
+      @if (formField.type === 'select' && formField.options) {
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>{{ formField.label }}</mat-label>
+          <mat-select [formControlName]="formField.formControlName">
+            @for (option of formField.options; track option) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
 
-    <mat-form-field appearance="outline">
-      <mat-label>Last name</mat-label>
-      <input matInput formControlName="lastname" (input)="onInput('lastname', $event)">
-    </mat-form-field>
+      @if (formField.type === 'text') {
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>{{ formField.label }}</mat-label>
+          @if (formField.autocomplete) {
+            <input matInput [formControlName]="formField.formControlName" (input)="onInput(formField.formControlName, $event)" [matAutocomplete]="auto">
+            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="applySuggestion(formField.formControlName, $event.option.value)">
+              <mat-option [value]="s" *ngFor="let s of suggestions$()">{{s}}</mat-option>
+            </mat-autocomplete>
+          } @else {
+            <input matInput [formControlName]="formField.formControlName" (input)="onInput(formField.formControlName, $event)">
+          }
+        </mat-form-field>
+      }
+
+      @if (formField.type === 'number') {
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>{{ formField.label }}</mat-label>
+          <input matInput type="number" [formControlName]="formField.formControlName" (input)="onInput(formField.formControlName, $event)">
+        </mat-form-field>
+      }
+      
+      @if (formField.type === 'textarea') { 
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>{{ formField.label }}</mat-label>
+          <textarea matInput [formControlName]="formField.formControlName" rows="3"></textarea>
+        </mat-form-field>
+      }
+    }
   </div>
+  <div class="form-segment">
+    <div class="controls">
+      <button mat-stroked-button type="button" (click)="toggleRecording()">
+        <mat-icon>mic</mat-icon> {{ speech.isRecording() ? 'Stop' : 'Record' }}
+      </button>
 
-  <div class="row">
-    <mat-form-field appearance="outline">
-      <mat-label>Age</mat-label>
-      <input matInput formControlName="age" type="number">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Hair color</mat-label>
-      <input matInput formControlName="hairColor" (input)="onInput('hairColor', $event)">
-    </mat-form-field>
-  </div>
-
-  <mat-form-field appearance="outline" class="full">
-    <mat-label>Street</mat-label>
-    <input matInput formControlName="street" (input)="onInput('street', $event)">
-  </mat-form-field>
-
-  <mat-form-field appearance="outline">
-    <mat-label>City</mat-label>
-    <input matInput formControlName="city" (input)="onInput('city', $event)">
-  </mat-form-field>
-
-  <mat-form-field appearance="outline">
-    <mat-label>Country</mat-label>
-    <input matInput formControlName="country" (input)="onInput('country', $event)" [matAutocomplete]="autoCountry">
-    <mat-autocomplete #autoCountry="matAutocomplete" (optionSelected)="applySuggestion('country', $event.option.value)">
-      <mat-option [value]="s" *ngFor="let s of suggestions$()">{{s}}</mat-option>
-    </mat-autocomplete>
-  </mat-form-field>
-
-  <mat-form-field appearance="outline" class="full">
-    <mat-label>Notes</mat-label>
-    <textarea matInput formControlName="notes" rows="3"></textarea>
-  </mat-form-field>
-
-  <div class="controls">
-    <button mat-raised-button type="button" (click)="toggleRecording()">
-      <mat-icon>mic</mat-icon> {{ speech.isRecording() ? 'Stop' : 'Record' }}
-    </button>
-
-    <div class="webcam">
-      <video #video width="320" height="240" autoplay muted></video>
-      <div class="webcam-controls">
-        <button mat-stroked-button type="button" (click)="toggleCamera(video)">
-          {{ isCameraActive() ? 'Stop Camera' : 'Start Camera' }}
-        </button>
-        @if (isCameraActive()) {
-          <button mat-stroked-button type="button" (click)="captureAndAnalyze()">Capture & Analyze</button>
-        }
+      <div class="webcam">
+        <video #video width="320" height="240" autoplay muted></video>
+        <div class="webcam-controls">
+          <button mat-stroked-button type="button" (click)="toggleCamera(video)">
+            {{ isCameraActive() ? 'Stop Camera' : 'Start Camera' }}
+          </button>
+          <button [disabled]="!isCameraActive()" mat-stroked-button type="button" (click)="captureAndAnalyze()">Capture & Analyze</button>
+        </div>
       </div>
-    </div>
 
-    <button mat-flat-button color="primary" type="submit">Submit</button>
+      <button mat-flat-button color="primary" type="submit">Submit</button>
+      </div>
   </div>
 </form>
 
 @if (isProcessing()) {
-    <div class="processing-overlay">
-      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-    </div>
+  <div class="processing-overlay">
+    <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+  </div>
 }
