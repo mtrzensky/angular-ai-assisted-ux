@@ -58,12 +58,6 @@ export class SpeechService {
   sendTranscript() {
     this.ngZone.run(() => {
       this.transcript$.next(this.transcriptBuffer.trim());
-      this.clear();
     });
-  }
-
-  clear() {
-    this.transcriptBuffer = '';
-    this.transcript$.next(this.transcriptBuffer);
   }
 }
