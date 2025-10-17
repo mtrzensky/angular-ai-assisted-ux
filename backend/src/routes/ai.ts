@@ -2,17 +2,17 @@ import express from "express";
 import upload from "../middleware/upload";
 import { callLLM } from "../llm/llmClient";
 import { analyzeImagePrompt } from "../prompts/analyze-image";
-import { analyzeTextPrompt } from "../prompts/analyze-speech";
+import { analyzeTextPrompt } from "../prompts/analyze-text";
 import { autocompletePrompt } from "../prompts/autocomplete";
 
 const router = express.Router();
 
 router.post("/analyze-text", async (req, res) => {
   try {
-    const { text } = req.body;
-    if (!text) return res.status(400).json({ error: "text required" });
+    const { text, formStructure } = req.body;
+    if (!text || !formStructure) return res.status(400).json({ error: "text required" });
 
-    const prompt = analyzeTextPrompt(text);
+    const prompt = analyzeTextPrompt(text, formStructure);
 
     const result = await callLLM('mistral', prompt);
     res.json({ parsed: JSON.parse(result) });
@@ -25,18 +25,24 @@ router.post("/analyze-text", async (req, res) => {
 
 router.post("/analyze-image", upload.single("image"), async (req, res) => {
   try {
+    const formStructure = req.body.formStructure;
+
     if (!req.file) return res.status(400).json({ error: "image required" });
+    if (!formStructure) return res.status(400).json({ error: "formStructure required" });
 
     const b64 = req.file.buffer.toString("base64");
     const prompt = analyzeImagePrompt();
 
-    const result = await callLLM('llava:13b', prompt, { images: [b64] });
+    const imageResult = await callLLM('llava:13b', prompt, { images: [b64] });
+    const result = await callLLM('mistral', analyzeTextPrompt(imageResult, formStructure));
+
     res.json({ parsed: JSON.parse(result) });
   } catch (err: any) {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 router.post("/autocomplete", async (req, res) => {
   try {

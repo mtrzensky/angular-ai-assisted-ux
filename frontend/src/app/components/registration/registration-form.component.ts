@@ -12,31 +12,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
-
-export interface FormField {
-  label: string;
-  formControlName: string;
-  placeholder: string;
-  type: 'text' | 'number' | 'textarea' | 'select';
-  autocomplete?: boolean;
-  options?: FormFieldSelectOption[];
-}
-
-export interface FormFieldSelectOption {
-  value: string;
-  label: string;
-}
-
-const formFields: FormField[] = [
-  { label: 'First Name', formControlName: 'firstname', placeholder: 'First Name', type: 'text', autocomplete: true },
-  { label: 'Last Name', formControlName: 'lastname', placeholder: 'Last Name', type: 'text' },
-  { label: 'Age', formControlName: 'age', placeholder: 'Age', type: 'number' },
-  { label: 'Street', formControlName: 'street', placeholder: 'Street', type: 'text' },
-  { label: 'City', formControlName: 'city', placeholder: 'City', type: 'text', },
-  { label: 'Country', formControlName: 'country', placeholder: 'Country', type: 'text', },
-  { label: 'Hair Color', formControlName: 'hairColor', placeholder: 'Hair Color', type: 'text',},
-  { label: 'Notes', formControlName: 'notes', placeholder: 'Additional Notes', type: 'textarea' },
-];
+import { FormField, formFieldsUsingText } from '../../../../../models/formData';
 
 @Component({
   selector: 'app-registration-form',
@@ -57,7 +33,7 @@ const formFields: FormField[] = [
 export class RegistrationFormComponent implements OnInit, OnDestroy {
   form: FormGroup;
 
-  formFields = formFields;
+  formFields = formFieldsUsingText;
 
   suggestions$ = signal<string[]>([]);
 
@@ -96,7 +72,7 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
       this.isProcessing.set(true);
       this.snackBar.open("Analyzing speech...", undefined, { duration: 3000 });
       console.log("Speech recognized:", txt);
-      const res: any = await this.api.analyzeText(txt);
+      const res: any = await this.api.analyzeText(txt, this.formFields.map(f => `${f.formControlName}: ${f.type}`).join('\n').toString());
       this.applyParsedFields(res.parsed);
       this.snackBar.open("Analyzing complete!", undefined, { duration: 3000 });
       this.isProcessing.set(false);
@@ -171,7 +147,7 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
     this.isProcessing.set(true);
     this.snackBar.open("Analyzing webcam picture...", undefined, { duration: 3000 });
     const blob = await this.webcam.captureFrame(this.videoRef);
-    const res: any = await this.api.analyzeImage(blob);
+    const res: any = await this.api.analyzeImage(blob, this.formFields.map(f => `${f.formControlName}: ${f.type}`).join('\n').toString());
     this.snackBar.open("Analyzing complete!", undefined, { duration: 3000 });
     this.isProcessing.set(false);
     this.applyParsedFields(res.parsed);

@@ -8,15 +8,18 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
-  analyzeText(text: string) {
-    return firstValueFrom(this.http.post(`${this.base}/analyze-text`, { text }));
+  analyzeText(text: string, formStructure: string) {
+    return firstValueFrom(this.http.post(`${this.base}/analyze-text`, { text, formStructure }));
   }
 
-  analyzeImage(file: Blob) {
-    const fd = new FormData();
-    fd.append('image', file, 'capture.png');
-    return firstValueFrom(this.http.post(`${this.base}/analyze-image`, fd));
-  }
+  analyzeImage(file: Blob, formStructure: string) {
+  const fd = new FormData();
+  fd.append('image', file, 'capture.png');
+  fd.append('formStructure', formStructure);
+
+  return firstValueFrom(this.http.post(`${this.base}/analyze-image`, fd));
+}
+
 
   autocomplete(field: string, query: string, context?: any) {
     return firstValueFrom(this.http.post(`${this.base}/autocomplete`, { field, query, context }));

@@ -19,9 +19,6 @@ export async function callLLM(model: string, prompt: string, options: Record<str
     ...options
   };
 
-  console.log('----- CALL LLM BODY -----');
-  console.log(JSON.stringify(body));
-
   const res = await fetch(`${OLLAMA_URL}/api/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

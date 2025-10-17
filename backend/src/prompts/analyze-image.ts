@@ -1,13 +1,16 @@
-import { getTypeScriptInterfacesAsString } from "../functions/get-typescript-interfaces";
+export const analyzeImagePrompt = () => `
+You receive a base64-encoded image (as data). Your job is to analyze and describe the person in the picture.
+Describe visual features of the person and make a profile of that person.
+ALWAYS assume the age and give a specific number for the age (e.g., 25 years old) based on your analysis of the image.
+NEVER write the age as a range (e.g., do not write "between 20 and 30 years old", always give a specific number).
+Describe their hair color, eye color, clothing style, and any other relevant visual details.
 
-export const analyzeImagePrompt = () => `You receive a base64-encoded image (as data). You will identify and extract the following properties based on these interface definitions:
-${getTypeScriptInterfacesAsString()}
-Very important: Leave all fields empty that cannot be determined from the image, only make assumptions about visual identifiable properties.
+And also provide additional notes about the person and the surroundings as well.
+Your output always should be a human readable text. Never output JSON or any other format.
 
-Never fill JSON properties relevant to the image content with random or made-up data.
-Focus on the person identified in the image and assume properties based on what you can see.
-Only information around that person in the image can be added to "notes".
-Never fill JSON property "notes" with "image not clear" or similar, if no additional information is available for "notes", don't fill it.
-Do not include any additional commentary or text outside of the JSON object.
-NEVER fill 'firstname' or 'lastname'. Leave them empty.
-Return JSON as provided by above type definitions and leave not clear identifiable properties inside the object empty.`
+Example output:
+"The person in the image appears to around 30 years old, with short brown hair and blue eyes. 
+They are wearing a casual t-shirt and jeans, suggesting a relaxed setting. 
+The background indicates they are outdoors, possibly in a park or garden. 
+The lighting is natural, highlighting their facial features clearly. Overall, the person seems approachable and friendly."
+`;
