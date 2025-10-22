@@ -4,7 +4,6 @@ import { ApiService } from '../../services/api.service';
 import { SpeechService } from '../../services/speech.service';
 import { WebcamService } from '../../services/webcam.service';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -25,7 +24,6 @@ import { FormField, formFieldsUsingSelects, formFieldsUsingText } from '../../..
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatAutocompleteModule,
     MatIconModule,
     ReactiveFormsModule,
     MatSelectModule,
@@ -37,11 +35,7 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
 
   formFields = formFieldsUsingSelects;
 
-  suggestions$ = signal<string[]>([]);
-
   private destroy$ = new Subject<void>();
-
-  private autocompleteTrigger$ = new Subject<{field:string, value:string}>();
 
   speech = inject(SpeechService);
 
@@ -79,18 +73,6 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
       this.snackBar.open("Analyzing complete!", undefined, { duration: 3000 });
       this.isProcessing.set(false);
     });
-
-    this.autocompleteTrigger$
-      .pipe(debounceTime(400), distinctUntilChanged((a,b)=> a.field===b.field && a.value===b.value))
-      .subscribe(async ({field, value}) => {
-        if (value.length < 3) {
-          this.suggestions$.set([]);
-          return;
-        }
-        const ctx = this.form.value;
-        const res: any = await this.api.autocomplete(field, value, ctx);
-        this.suggestions$.set(res.suggestions || []);
-      });
   }
 
   ngOnDestroy() {
@@ -170,23 +152,5 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
       .toString();
     console.log('formStructure', formStructure);
     return formStructure;
-  }
-
-  // autocomplete input binding
-  onInput(field: string, evt: Event) {
-    const val = (evt.target as HTMLInputElement).value;
-    this.autocompleteTrigger$.next({field, value: val});
-  }
-
-  // when user selects a suggestion
-  applySuggestion(field: string, val: string) {
-    this.form.controls[field].setValue(val);
-    this.suggestions$.set([]);
-  }
-
-  // manual submit for demo
-  submit() {
-    console.log("Final form value:", this.form.value);
-    alert('Form submitted — check console.');
   }
 }

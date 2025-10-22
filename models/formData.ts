@@ -3,7 +3,6 @@ export interface FormField {
   formControlName: string;
   placeholder: string;
   type: 'text' | 'number' | 'textarea' | 'select';
-  autocomplete?: boolean;
   options?: FormFieldSelectOption[];
 }
 
@@ -13,7 +12,7 @@ export interface FormFieldSelectOption {
 }
 
 export const formFieldsUsingText: FormField[] = [
-  { label: 'First Name', formControlName: 'firstname', placeholder: 'First Name', type: 'text', autocomplete: true },
+  { label: 'First Name', formControlName: 'firstname', placeholder: 'First Name', type: 'text', },
   { label: 'Last Name', formControlName: 'lastname', placeholder: 'Last Name', type: 'text' },
   { label: 'Date of Birth', formControlName: 'dob', placeholder: 'YYYY-MM-DD', type: 'text' },
   { label: 'Estimated Age', formControlName: 'estimatedAge', placeholder: 'Estimated age (years)', type: 'number' },
@@ -29,7 +28,7 @@ export const formFieldsUsingText: FormField[] = [
 ];
 
 export const formFieldsUsingSelects: FormField[] = [
-  { label: 'First Name', formControlName: 'firstname', placeholder: 'First Name', type: 'text', autocomplete: true },
+  { label: 'First Name', formControlName: 'firstname', placeholder: 'First Name', type: 'text', },
   { label: 'Last Name', formControlName: 'lastname', placeholder: 'Last Name', type: 'text' },
   { label: 'Estimated Age', formControlName: 'estimatedAge', placeholder: 'Estimated age', type: 'select', options: [
     { value: '0-12', label: 'Child (0-12)' },

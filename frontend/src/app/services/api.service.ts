@@ -19,9 +19,4 @@ export class ApiService {
 
     return firstValueFrom(this.http.post(`${this.base}/analyze-image`, fd));
   }
-
-
-  autocomplete(field: string, query: string, context?: any) {
-    return firstValueFrom(this.http.post(`${this.base}/autocomplete`, { field, query, context }));
-  }
 }

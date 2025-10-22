@@ -1,4 +1,4 @@
-<h1>Profiler Demo</h1>
+<h1>Medical Profiling</h1>
 <form [formGroup]="form" (ngSubmit)="submit()" class="form">
   <div class="form-segment">
     @for (formField of formFields; track formField) {
@@ -16,14 +16,7 @@
       @if (formField.type === 'text') {
         <mat-form-field appearance="outline" class="full">
           <mat-label>{{ formField.label }}</mat-label>
-          @if (formField.autocomplete) {
-            <input matInput [formControlName]="formField.formControlName" (input)="onInput(formField.formControlName, $event)" [matAutocomplete]="auto">
-            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="applySuggestion(formField.formControlName, $event.option.value)">
-              <mat-option [value]="s" *ngFor="let s of suggestions$()">{{s}}</mat-option>
-            </mat-autocomplete>
-          } @else {
-            <input matInput [formControlName]="formField.formControlName" (input)="onInput(formField.formControlName, $event)">
-          }
+          <input matInput [formControlName]="formField.formControlName" (input)="onInput(formField.formControlName, $event)">
         </mat-form-field>
       }
 
@@ -60,9 +53,7 @@
           <button [disabled]="!isCameraActive()" mat-stroked-button type="button" (click)="captureAndAnalyze()">Capture & Analyze</button>
         </div>
       </div>
-
-      <button mat-flat-button color="primary" type="submit">Submit</button>
-      </div>
+    </div>
   </div>
 </form>
 
