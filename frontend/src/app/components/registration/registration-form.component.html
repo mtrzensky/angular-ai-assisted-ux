@@ -1,5 +1,5 @@
 <h1>Medical Profiling</h1>
-<form [formGroup]="form" (ngSubmit)="submit()" class="form">
+<form [formGroup]="form" class="form">
   <div class="form-segment">
     @for (formField of formFields; track formField) {
       @if (formField.type === 'select' && formField.options) {
@@ -16,14 +16,14 @@
       @if (formField.type === 'text') {
         <mat-form-field appearance="outline" class="full">
           <mat-label>{{ formField.label }}</mat-label>
-          <input matInput [formControlName]="formField.formControlName" (input)="onInput(formField.formControlName, $event)">
+          <input matInput [formControlName]="formField.formControlName">
         </mat-form-field>
       }
 
       @if (formField.type === 'number') {
         <mat-form-field appearance="outline" class="full">
           <mat-label>{{ formField.label }}</mat-label>
-          <input matInput type="number" [formControlName]="formField.formControlName" (input)="onInput(formField.formControlName, $event)">
+          <input matInput type="number" [formControlName]="formField.formControlName">
         </mat-form-field>
       }
       
