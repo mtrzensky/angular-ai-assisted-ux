@@ -15,7 +15,6 @@ export async function callLLM(model: string, prompt: string, options: Record<str
     model,
     prompt,
     stream: false,
-    format: 'json',
     ...options
   };
 
@@ -30,7 +29,7 @@ export async function callLLM(model: string, prompt: string, options: Record<str
     throw new Error(`Ollama error ${res.status}: ${text}`);
   }
 
-  console.log('----- RETRIEVE RESPONSE -----');
+  console.log(`----- ${model} RESPONSE -----`);
   const ollamaJsonResult = await res.json();
   console.log(ollamaJsonResult.response);
 

@@ -8,7 +8,7 @@ You must output a **valid JSON object** strictly based on the provided form stru
 ### FORM STRUCTURE
 ${formStructure}
 
-### SOURCE TEXT
+### USER INPUT
 ${text}
 
 ---
@@ -16,8 +16,8 @@ ${text}
 ### STRICT EXTRACTION RULES
 Follow these rules exactly:
 
-1. **Field coverage**
-   - Include every field from the form structure.
+1. **Property coverage**
+   - Include every property from the form structure in your JSON output.
    - If the information is not mentioned or not inferable, set its value to null (not the string "null" or "unknown").
    - Never use the strings "null", "unknown", "n/a", or similar.
    - Never wrap numeric or null values in quotes.
@@ -37,11 +37,16 @@ Follow these rules exactly:
 
    Perform reasoning like this internally:
    - Step 1: Identify any phrase in the input text related to this field.
-   - Step 2: Compare it against each available \`option.value\`.
-   - Step 3: Pick the best match **only** if a clear connection exists.
-   - Step 4: Otherwise, output \`null\`.
+   - Step 2: Check if the field is a 'select' type.
+   - Step 3a: If it is a 'select' type: Compare it against each available \`option.value\`.
+   - Step 3b: Pick the best match **only** if a clear connection exists.
+   - Step 4: If it is not a 'select' type: Fill that field based on the field name and value type (Use Data Typing rule).
+   - Step 5: Otherwise, output \`null\`.
 
 4. **Avoid guessing or invention**
+   - Prioritize textclues about form field names. Fill the data derived from the text inside the form field provided by textclue. 
+     - Example: "The first name is Mike" -> "first name" is a clue for "firstname".
+     - Example: "Age is around 35 years old" -> "age" is a clue for "estimatedAge".
    - Do NOT infer names, firstnames, lastnames, or any personal data that is not visible in the text.
    - If the text contains "unknown", "not visible", "none", or similar phrases, set the corresponding field to \`null\`.
 

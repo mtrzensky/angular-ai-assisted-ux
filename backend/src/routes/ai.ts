@@ -17,9 +17,10 @@ router.post("/analyze-text", async (req, res) => {
     const result = await callLLM('mistral', prompt, {
       temperature: 0.0,
       top_p: 0.2,
-      num_predict: 400
+      num_predict: 400,
+      format: 'json',
     });
-    
+
     res.json({ parsed: JSON.parse(result) });
   } catch (err: any) {
     console.error(err);
@@ -38,16 +39,17 @@ router.post("/analyze-image", upload.single("image"), async (req, res) => {
     const b64 = req.file.buffer.toString("base64");
     const prompt = analyzeImagePrompt(formStructure);
 
-    const imageResult = await callLLM('llava:13b', prompt, { 
-      images: [b64],
+    const imageResult = await callLLM('gemma3:12b', prompt, { 
       temperature: 0.0,
       top_p: 0.1,
       num_predict: 400, 
+      images: [b64]
     });
     const result = await callLLM('mistral', analyzeTextPrompt(imageResult, formStructure), {
       temperature: 0.0,
       top_p: 0.2,
-      num_predict: 400
+      num_predict: 400,
+      format: 'json'
     });
 
     res.json({ parsed: JSON.parse(result) });
