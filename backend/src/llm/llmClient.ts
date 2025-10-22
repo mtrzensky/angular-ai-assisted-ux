@@ -32,7 +32,7 @@ export async function callLLM(model: string, prompt: string, options: Record<str
 
   console.log('----- RETRIEVE RESPONSE -----');
   const ollamaJsonResult = await res.json();
-  console.log(ollamaJsonResult);
+  console.log(ollamaJsonResult.response);
 
   return ollamaJsonResult.response;
 }

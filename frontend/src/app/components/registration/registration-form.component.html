@@ -44,12 +44,15 @@
   </div>
   <div class="form-segment">
     <div class="controls">
+      <button mat-flat-button color="warn" type="button" (click)="resetForm()">
+        Reset Form
+      </button>
       <button mat-stroked-button type="button" (click)="toggleRecording()">
         <mat-icon>mic</mat-icon> {{ speech.isRecording() ? 'Stop' : 'Record' }}
       </button>
 
       <div class="webcam">
-        <video #video width="320" height="240" autoplay muted></video>
+        <video #video width="420" height="360" autoplay muted></video>
         <div class="webcam-controls">
           <button mat-stroked-button type="button" (click)="toggleCamera(video)">
             {{ isCameraActive() ? 'Stop Camera' : 'Start Camera' }}

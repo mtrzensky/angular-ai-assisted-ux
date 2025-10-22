@@ -74,7 +74,7 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
       this.isProcessing.set(true);
       this.snackBar.open("Analyzing speech...", undefined, { duration: 3000 });
       console.log("Speech recognized:", txt);
-      const res: any = await this.api.analyzeText(txt, this.formFields.map(f => `${f.formControlName}: ${f.type}`).join('\n').toString());
+      const res: any = await this.api.analyzeText(txt, this.getFormStructure());
       this.applyParsedFields(res.parsed);
       this.snackBar.open("Analyzing complete!", undefined, { duration: 3000 });
       this.isProcessing.set(false);
@@ -105,6 +105,10 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
         this.form.controls[k].setValue(parsed[k]);
       }
     });
+  }
+
+  resetForm() {
+    this.form.reset();
   }
 
   toggleRecording() {
@@ -149,10 +153,23 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
     this.isProcessing.set(true);
     this.snackBar.open("Analyzing webcam picture...", undefined, { duration: 3000 });
     const blob = await this.webcam.captureFrame(this.videoRef);
-    const res: any = await this.api.analyzeImage(blob, this.formFields.map(f => `${f.formControlName}: ${f.type}`).join('\n').toString());
+    const res: any = await this.api.analyzeImage(blob, this.getFormStructure());
     this.snackBar.open("Analyzing complete!", undefined, { duration: 3000 });
     this.isProcessing.set(false);
     this.applyParsedFields(res.parsed);
+  }
+
+  getFormStructure() {
+    const formStructure = this.formFields.map(
+        f => 
+          f.options
+          ? `{name: '${f.formControlName}', type: '${f.type}', options: [${f.options.map(option => `{value: '${option.value}', label: '${option.label}'}`).join(', ').toString()}]}` 
+          : `{name: '${f.formControlName}', type: '${f.type}'}`
+      )
+      .join(', ')
+      .toString();
+    console.log('formStructure', formStructure);
+    return formStructure;
   }
 
   // autocomplete input binding

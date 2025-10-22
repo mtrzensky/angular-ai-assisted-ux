@@ -14,7 +14,12 @@ router.post("/analyze-text", async (req, res) => {
 
     const prompt = analyzeTextPrompt(text, formStructure);
 
-    const result = await callLLM('mistral', prompt);
+    const result = await callLLM('mistral', prompt, {
+      temperature: 0.0,
+      top_p: 0.2,
+      num_predict: 400
+    });
+    
     res.json({ parsed: JSON.parse(result) });
   } catch (err: any) {
     console.error(err);
@@ -31,10 +36,19 @@ router.post("/analyze-image", upload.single("image"), async (req, res) => {
     if (!formStructure) return res.status(400).json({ error: "formStructure required" });
 
     const b64 = req.file.buffer.toString("base64");
-    const prompt = analyzeImagePrompt();
+    const prompt = analyzeImagePrompt(formStructure);
 
-    const imageResult = await callLLM('llava:13b', prompt, { images: [b64] });
-    const result = await callLLM('mistral', analyzeTextPrompt(imageResult, formStructure));
+    const imageResult = await callLLM('llava:13b', prompt, { 
+      images: [b64],
+      temperature: 0.0,
+      top_p: 0.1,
+      num_predict: 400, 
+    });
+    const result = await callLLM('mistral', analyzeTextPrompt(imageResult, formStructure), {
+      temperature: 0.0,
+      top_p: 0.2,
+      num_predict: 400
+    });
 
     res.json({ parsed: JSON.parse(result) });
   } catch (err: any) {

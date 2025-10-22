@@ -13,12 +13,12 @@ export class ApiService {
   }
 
   analyzeImage(file: Blob, formStructure: string) {
-  const fd = new FormData();
-  fd.append('image', file, 'capture.png');
-  fd.append('formStructure', formStructure);
+    const fd = new FormData();
+    fd.append('image', file, 'capture.png');
+    fd.append('formStructure', formStructure);
 
-  return firstValueFrom(this.http.post(`${this.base}/analyze-image`, fd));
-}
+    return firstValueFrom(this.http.post(`${this.base}/analyze-image`, fd));
+  }
 
 
   autocomplete(field: string, query: string, context?: any) {
