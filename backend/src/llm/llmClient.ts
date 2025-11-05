@@ -1,12 +1,15 @@
+import { JSONSchema7 } from "json-schema";
+
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
 
 /**
  * Calls a locally running Ollama model with the given prompt.
  * @param model Name of the ollama model, e.g. "llama3", "mistral", "codellama"
  * @param prompt The text prompt you want to send
+ * @param format The format of the output
  * @param options Additional options (e.g. temperature, max tokens, etc.)
  */
-export async function callLLM(model: string, prompt: string, options: Record<string, any> = {}): Promise<string> {
+export async function callLLM(model: string, prompt: string | JSONSchema7 = '', format: string, options: Record<string, any> = {}): Promise<string> {
   if (typeof prompt !== "string") {
     throw new Error(`Ollama requires "prompt" to be a string. Got: ${typeof prompt}`);
   }
@@ -15,6 +18,7 @@ export async function callLLM(model: string, prompt: string, options: Record<str
     model,
     prompt,
     stream: false,
+    format,
     ...options
   };
 

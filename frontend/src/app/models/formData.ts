@@ -1,3 +1,5 @@
+import { JSONSchema7, JSONSchema7Definition } from "json-schema";
+
 export interface FormField {
   label: string;
   formControlName: string;
@@ -28,7 +30,7 @@ export const formFieldsUsingText: FormField[] = [
 ];
 
 export const formFieldsUsingSelects: FormField[] = [
-  { label: 'First Name', formControlName: 'firstname', placeholder: 'First Name', type: 'text', },
+  { label: 'First Name', formControlName: 'firstname', placeholder: 'First Name', type: 'text' },
   { label: 'Last Name', formControlName: 'lastname', placeholder: 'Last Name', type: 'text' },
   { label: 'Estimated Age', formControlName: 'estimatedAge', placeholder: 'Estimated age', type: 'select', options: [
     { value: '0-12', label: 'Child (0-12)' },
@@ -52,3 +54,51 @@ export const formFieldsUsingSelects: FormField[] = [
   { label: 'Clothing Type', formControlName: 'clothing', placeholder: 'Clothing', type: 'text' },
   { label: 'Notes', formControlName: 'notes', placeholder: 'Clinical / extra notes', type: 'textarea' }
 ];
+
+export function formFieldsToJSONSchema(formFields: FormField[]): JSONSchema7 {
+  const properties: Record<string, JSONSchema7Definition> = {};
+  //const required: string[] = [];
+
+    for (const field of formFields) {
+    let fieldSchema: JSONSchema7;
+
+    switch (field.type) {
+      case "text":
+      case "textarea":
+        fieldSchema = { type: ["string", "null"] };
+        break;
+
+      case "number":
+        fieldSchema = { type: ["number", "null"] };
+        break;
+
+      case "select":
+        fieldSchema = {
+          type: ["string", "null"],
+          enum: field.options?.map(o => o.value),
+        };
+        break;
+
+      default:
+        fieldSchema = { type: ["string", "null"] };
+        break;
+    }
+
+    if (field.placeholder) {
+      fieldSchema.description = field.placeholder;
+    }
+
+    properties[field.formControlName] = fieldSchema;
+    //required.push(field.formControlName);
+  }
+
+  const schema: JSONSchema7 = {
+    $schema: "http://json-schema.org/draft-07/schema#",
+    type: "object",
+    properties,
+    //required,
+    additionalProperties: false,
+  };
+
+  return schema;
+}

@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class SpeechService {
-  recognition: any;
+  recognition: SpeechRecognition | undefined;
   transcriptBuffer = '';
   transcript$ = new Subject<string>();
   isRecording = signal(false);
