@@ -13,6 +13,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { FormField, formFieldsToJSONSchema, formFieldsUsingSelects, formFieldsUsingText } from '../../models/formData';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-registration-form',
@@ -31,13 +32,24 @@ import { FormField, formFieldsToJSONSchema, formFieldsUsingSelects, formFieldsUs
   ],
 })
 export class RegistrationFormComponent implements OnInit, OnDestroy {
-  form: FormGroup;
+  private sanitizer: DomSanitizer = inject(DomSanitizer);
+  private fb: FormBuilder = inject(FormBuilder);
+  private api: ApiService = inject(ApiService);
+  private webcam: WebcamService = inject(WebcamService);
+  private snackBar: MatSnackBar = inject(MatSnackBar);
+  speech = inject(SpeechService);
 
   formFields = formFieldsUsingSelects;
 
-  private destroy$ = new Subject<void>();
+  form: FormGroup = this.buildForm(this.formFields);
 
-  speech = inject(SpeechService);
+  capturedImage: Blob | null = null;
+
+  imageUrl: SafeUrl | null = null;
+
+  private objectUrl: string | null = null;
+
+  private destroy$ = new Subject<void>();
 
   // signals for UI state
   isCameraActive = signal(false);
@@ -46,20 +58,12 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
   videoStream?: MediaStream;
   videoRef!: HTMLVideoElement;
 
-  constructor(
-    private fb: FormBuilder,
-    private api: ApiService,
-    private webcam: WebcamService,
-    private snackBar: MatSnackBar
-  ) {
-    this.form = this.buildForm(this.formFields);
-  }
-
   buildForm(formFields: FormField[]) {
     const group: Record<string, string[]> = {};
     formFields.forEach(field => {
       group[field.formControlName] = [''];
     });
+
     return this.fb.group(group);
   }
 
@@ -68,7 +72,7 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
       this.isProcessing.set(true);
       this.snackBar.open("Analyzing speech...", undefined, { duration: 3000 });
       console.log("Speech recognized:", txt);
-      const res: any = await this.api.analyzeText(txt, formFieldsToJSONSchema(this.formFields));
+      const res = await this.api.analyzeText(txt, formFieldsToJSONSchema(this.formFields)) as { parsed: Record<string, any> };
       this.applyParsedFields(res.parsed);
       this.snackBar.open("Analyzing complete!", undefined, { duration: 3000 });
       this.isProcessing.set(false);
@@ -79,6 +83,7 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.videoStream?.getTracks().forEach(t => t.stop());
+    this.clearImage();
   }
 
   applyParsedFields(parsed: any) {
@@ -91,6 +96,7 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
 
   resetForm() {
     this.form.reset();
+    this.clearImage();
   }
 
   toggleRecording() {
@@ -125,16 +131,29 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
   }
 
   async startCamera(videoEl: HTMLVideoElement) {
+    this.clearImage();
     this.videoRef = videoEl;
     this.videoStream = await this.webcam.getStream();
     videoEl.srcObject = this.videoStream;
     await videoEl.play();
   }
 
+  private clearImage() {
+    if (this.capturedImage && this.objectUrl) {
+      URL.revokeObjectURL(this.objectUrl);
+    }
+    this.capturedImage = null;
+    this.objectUrl = null;
+  }
+
   async captureAndAnalyze() {
     this.isProcessing.set(true);
     this.snackBar.open("Analyzing webcam picture...", undefined, { duration: 3000 });
     const blob = await this.webcam.captureFrame(this.videoRef);
+    this.capturedImage = blob;
+    this.objectUrl = URL.createObjectURL(blob);
+    this.imageUrl = this.sanitizer.bypassSecurityTrustUrl(this.objectUrl);
+    this.stopCamera();
     const res: any = await this.api.analyzeImage(blob, formFieldsToJSONSchema(this.formFields));
     this.snackBar.open("Analyzing complete!", undefined, { duration: 3000 });
     this.isProcessing.set(false);

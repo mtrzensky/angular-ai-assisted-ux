@@ -48,6 +48,9 @@ Follow these rules exactly:
      - Example: "The first name is Mike" -> "first name" is a clue for "firstname".
      - Example: "Age is around 35 years old" -> "age" is a clue for "estimatedAge".
    - Do NOT infer names, firstnames, lastnames, or any personal data that is not visible in the text.
+   - In terms of names read for hints of spelling. If a person is spelling the firstname or lastname, there will be letters divided by spaces. You will write down the name EXACTLY as spelled out letter by letter WITHOUT spaces.
+    - Correct example: "The name is spelled h u s t o n" -> "lastname: Huston".
+    - Incorrect example: "the name is spelled j o n a s" -> "lastname: j o n s".
    - If the text contains "unknown", "not visible", "none", or similar phrases, set the corresponding field to \`null\`.
 
 5. **Output format**

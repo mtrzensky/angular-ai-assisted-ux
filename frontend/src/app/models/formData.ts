@@ -20,8 +20,8 @@ export const formFieldsUsingText: FormField[] = [
   { label: 'Estimated Age', formControlName: 'estimatedAge', placeholder: 'Estimated age (years)', type: 'number' },
   { label: 'Height (cm)', formControlName: 'height', placeholder: 'Height in cm', type: 'number' },
   { label: 'Weight (kg)', formControlName: 'weight', placeholder: 'Weight in kg', type: 'number' },
-  { label: 'Eye Color', formControlName: 'eyeColor', placeholder: 'Eye Color', type: 'text' },
-  { label: 'Hair Color / Style', formControlName: 'hairColor', placeholder: 'Hair Color and Style', type: 'text' },
+  { label: 'Eye Color', formControlName: 'eye_color', placeholder: 'Eye Color', type: 'text' },
+  { label: 'Hair Color / Style', formControlName: 'hair_color', placeholder: 'Hair Color and Style', type: 'text' },
   { label: 'Clothing / Outfit', formControlName: 'clothing', placeholder: 'Describe clothing', type: 'textarea' },
   { label: 'Distinguishing Marks', formControlName: 'marks', placeholder: 'Scars, tattoos, glasses...', type: 'textarea' },
   { label: 'Mobility / Assistance', formControlName: 'mobility', placeholder: 'Walking, wheelchair, needs help', type: 'text' },
@@ -39,11 +39,15 @@ export const formFieldsUsingSelects: FormField[] = [
     { value: '40-64', label: 'Adult (40-64)' },
     { value: '65+', label: 'Senior (65+)' },
   ] },
-  { label: 'Eye Color', formControlName: 'eyeColor', placeholder: 'Eye Color', type: 'select', options: [
+  { label: 'Eye Color', formControlName: 'eye_color', placeholder: 'Eye Color', type: 'select', options: [
     { value: 'blue', label: 'Blue' }, { value: 'brown', label: 'Brown' }, { value: 'green', label: 'Green'}, { value:'other', label:'Other' }
   ]},
-  { label: 'Hair Color', formControlName: 'hairColor', placeholder: 'Hair Color', type: 'select', options: [
+  { label: 'Hair Color', formControlName: 'hair_color', placeholder: 'Hair Color', type: 'select', options: [
     { value: 'black', label: 'Black' }, { value: 'brown', label: 'Brown' }, { value: 'blonde', label: 'Blonde' }, { value: 'gray', label: 'Gray' }, { value:'other', label:'Other' }
+  ]},
+  /*{ label: 'Items connected to the person', formControlName: 'items_connected_to_person', placeholder: 'Items connected to the person', type: 'textarea' },
+  { label: 'Visible Wounds', formControlName: 'visible_wounds', placeholder: 'Visible Wounds', type: 'select', options: [
+    { value: 'no', label: 'No' }, { value: 'yes_upper', label: 'Yes, upper body' }, { value: 'yes_lower', label: 'Yes, lower body'}
   ]},
   { label: 'Glasses', formControlName: 'glasses', placeholder: 'Wearing glasses?', type: 'select', options: [
     { value: 'no', label: 'No' }, { value: 'yes', label: 'Yes' }, { value: 'sunglasses', label: 'Sunglasses' }
@@ -51,7 +55,7 @@ export const formFieldsUsingSelects: FormField[] = [
   { label: 'Mobility', formControlName: 'mobility', placeholder: 'Mobility', type: 'select', options: [
     { value: 'walking', label: 'Walking' }, { value: 'wheelchair', label: 'Wheelchair' }, { value: 'bedridden', label: 'Bedridden' }
   ]},
-  { label: 'Clothing Type', formControlName: 'clothing', placeholder: 'Clothing', type: 'text' },
+  { label: 'Clothing Type', formControlName: 'clothing', placeholder: 'Clothing', type: 'text' },*/
   { label: 'Notes', formControlName: 'notes', placeholder: 'Clinical / extra notes', type: 'textarea' }
 ];
 
