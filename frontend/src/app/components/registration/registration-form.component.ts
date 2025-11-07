@@ -3,7 +3,7 @@ import { Form, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/form
 import { ApiService } from '../../services/api.service';
 import { SpeechService } from '../../services/speech.service';
 import { WebcamService } from '../../services/webcam.service';
-import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,7 +12,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
-import { FormField, formFieldsUsingSelects, formFieldsUsingText } from '../../../../../models/formData';
+import { FormField, formFieldsUsingSelects, formFieldsUsingText } from '../../models/formData';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { formFieldsToJSONSchema } from '../../functions/form-fields-to-json-schema';
 
 @Component({
   selector: 'app-registration-form',
@@ -31,13 +33,24 @@ import { FormField, formFieldsUsingSelects, formFieldsUsingText } from '../../..
   ],
 })
 export class RegistrationFormComponent implements OnInit, OnDestroy {
-  form: FormGroup;
+  private sanitizer: DomSanitizer = inject(DomSanitizer);
+  private fb: FormBuilder = inject(FormBuilder);
+  private api: ApiService = inject(ApiService);
+  private webcam: WebcamService = inject(WebcamService);
+  private snackBar: MatSnackBar = inject(MatSnackBar);
+  speech = inject(SpeechService);
 
   formFields = formFieldsUsingSelects;
 
-  private destroy$ = new Subject<void>();
+  form: FormGroup = this.buildForm(this.formFields);
 
-  speech = inject(SpeechService);
+  capturedImage: Blob | null = null;
+
+  imageUrl: SafeUrl | null = null;
+
+  private objectUrl: string | null = null;
+
+  private destroy$ = new Subject<void>();
 
   // signals for UI state
   isCameraActive = signal(false);
@@ -46,20 +59,12 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
   videoStream?: MediaStream;
   videoRef!: HTMLVideoElement;
 
-  constructor(
-    private fb: FormBuilder,
-    private api: ApiService,
-    private webcam: WebcamService,
-    private snackBar: MatSnackBar
-  ) {
-    this.form = this.buildForm(this.formFields);
-  }
-
   buildForm(formFields: FormField[]) {
     const group: Record<string, string[]> = {};
     formFields.forEach(field => {
       group[field.formControlName] = [''];
     });
+
     return this.fb.group(group);
   }
 
@@ -67,9 +72,11 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
     this.speech.transcript$.subscribe(async (txt) => {
       this.isProcessing.set(true);
       this.snackBar.open("Analyzing speech...", undefined, { duration: 3000 });
+
       console.log("Speech recognized:", txt);
-      const res: any = await this.api.analyzeText(txt, this.getFormStructure());
+      const res = await this.api.analyzeText(txt, formFieldsToJSONSchema(this.formFields)) as { parsed: Record<string, any> };
       this.applyParsedFields(res.parsed);
+
       this.snackBar.open("Analyzing complete!", undefined, { duration: 3000 });
       this.isProcessing.set(false);
     });
@@ -79,9 +86,10 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.videoStream?.getTracks().forEach(t => t.stop());
+    this.clearImage();
   }
 
-  applyParsedFields(parsed: any) {
+  applyParsedFields(parsed: Record<string, any>) {
     Object.keys(parsed || {}).forEach(k => {
       if (this.form.controls[k] && parsed[k] !== null) {
         this.form.controls[k].setValue(parsed[k]);
@@ -91,6 +99,7 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
 
   resetForm() {
     this.form.reset();
+    this.clearImage();
   }
 
   toggleRecording() {
@@ -125,32 +134,36 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
   }
 
   async startCamera(videoEl: HTMLVideoElement) {
+    this.clearImage();
     this.videoRef = videoEl;
     this.videoStream = await this.webcam.getStream();
     videoEl.srcObject = this.videoStream;
     await videoEl.play();
   }
 
+  private clearImage() {
+    if (this.capturedImage && this.objectUrl) {
+      URL.revokeObjectURL(this.objectUrl);
+    }
+    this.capturedImage = null;
+    this.objectUrl = null;
+  }
+
   async captureAndAnalyze() {
     this.isProcessing.set(true);
     this.snackBar.open("Analyzing webcam picture...", undefined, { duration: 3000 });
+
     const blob = await this.webcam.captureFrame(this.videoRef);
-    const res: any = await this.api.analyzeImage(blob, this.getFormStructure());
+    this.capturedImage = blob;
+    this.objectUrl = URL.createObjectURL(blob);
+    this.imageUrl = this.sanitizer.bypassSecurityTrustUrl(this.objectUrl);
+
+    this.stopCamera();
+
+    const res: any = await this.api.analyzeImage(blob, formFieldsToJSONSchema(this.formFields));
     this.snackBar.open("Analyzing complete!", undefined, { duration: 3000 });
+
     this.isProcessing.set(false);
     this.applyParsedFields(res.parsed);
-  }
-
-  getFormStructure() {
-    const formStructure = this.formFields.map(
-        f => 
-          f.options
-          ? `{name: '${f.formControlName}', type: '${f.type}', options: [${f.options.map(option => `{value: '${option.value}', label: '${option.label}'}`).join(', ').toString()}]}` 
-          : `{name: '${f.formControlName}', type: '${f.type}'}`
-      )
-      .join(', ')
-      .toString();
-    console.log('formStructure', formStructure);
-    return formStructure;
   }
 }

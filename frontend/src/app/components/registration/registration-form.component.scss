@@ -20,10 +20,27 @@ mat-form-field { flex: 1; min-width: 180px; }
   flex-direction: column;
 }
 
+.webcam {
+  position: relative;
+
+  &-container, &-image, &-video {
+    width: 420px;
+    height: 360px;
+  }
+
+  &-image {
+    border: lightgreen 4px solid;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+}
+
 .webcam-controls {
   display: flex;
   gap: 1rem;
   align-items: center;
+  margin-top: 1rem;
 }
 
 .processing-overlay {
