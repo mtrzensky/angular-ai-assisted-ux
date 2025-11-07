@@ -15,8 +15,8 @@ router.post("/analyze-text", async (req, res) => {
 
     const result = await callLLM('mistral', prompt, formStructure, {
       temperature: 0.0,
-      top_p: 0,
-      num_ctx: 8192,
+      top_p: 0.1,
+      num_ctx: 10240,
       num_predict: 512,
     });
 

@@ -1,5 +1,3 @@
-import { JSONSchema7, JSONSchema7Definition } from "json-schema";
-
 export interface FormField {
   label: string;
   formControlName: string;
