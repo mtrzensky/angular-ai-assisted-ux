@@ -12,8 +12,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
-import { FormField, formFieldsToJSONSchema, formFieldsUsingSelects, formFieldsUsingText } from '../../models/formData';
+import { FormField, formFieldsUsingSelects, formFieldsUsingText } from '../../models/formData';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { formFieldsToJSONSchema } from '../../functions/form-fields-to-json-schema';
 
 @Component({
   selector: 'app-registration-form',

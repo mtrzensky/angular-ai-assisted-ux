@@ -36,6 +36,7 @@ export async function callLLM(model: string, prompt: string | JSONSchema7 = '', 
   console.log(`----- ${model} RESPONSE -----`);
   const ollamaJsonResult = await res.json();
   console.log(ollamaJsonResult.response);
+  console.log(`\n\n`);
 
   return ollamaJsonResult.response;
 }

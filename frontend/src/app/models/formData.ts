@@ -45,8 +45,7 @@ export const formFieldsUsingSelects: FormField[] = [
   { label: 'Hair Color', formControlName: 'hair_color', placeholder: 'Hair Color', type: 'select', options: [
     { value: 'black', label: 'Black' }, { value: 'brown', label: 'Brown' }, { value: 'blonde', label: 'Blonde' }, { value: 'gray', label: 'Gray' }, { value:'other', label:'Other' }
   ]},
-  /*{ label: 'Items connected to the person', formControlName: 'items_connected_to_person', placeholder: 'Items connected to the person', type: 'textarea' },
-  { label: 'Visible Wounds', formControlName: 'visible_wounds', placeholder: 'Visible Wounds', type: 'select', options: [
+  /*{ label: 'Visible Wounds', formControlName: 'visible_wounds', placeholder: 'Visible Wounds', type: 'select', options: [
     { value: 'no', label: 'No' }, { value: 'yes_upper', label: 'Yes, upper body' }, { value: 'yes_lower', label: 'Yes, lower body'}
   ]},
   { label: 'Glasses', formControlName: 'glasses', placeholder: 'Wearing glasses?', type: 'select', options: [
@@ -58,51 +57,3 @@ export const formFieldsUsingSelects: FormField[] = [
   { label: 'Clothing Type', formControlName: 'clothing', placeholder: 'Clothing', type: 'text' },*/
   { label: 'Notes', formControlName: 'notes', placeholder: 'Clinical / extra notes', type: 'textarea' }
 ];
-
-export function formFieldsToJSONSchema(formFields: FormField[]): JSONSchema7 {
-  const properties: Record<string, JSONSchema7Definition> = {};
-  //const required: string[] = [];
-
-    for (const field of formFields) {
-    let fieldSchema: JSONSchema7;
-
-    switch (field.type) {
-      case "text":
-      case "textarea":
-        fieldSchema = { type: ["string", "null"] };
-        break;
-
-      case "number":
-        fieldSchema = { type: ["number", "null"] };
-        break;
-
-      case "select":
-        fieldSchema = {
-          type: ["string", "null"],
-          enum: field.options?.map(o => o.value),
-        };
-        break;
-
-      default:
-        fieldSchema = { type: ["string", "null"] };
-        break;
-    }
-
-    if (field.placeholder) {
-      fieldSchema.description = field.placeholder;
-    }
-
-    properties[field.formControlName] = fieldSchema;
-    //required.push(field.formControlName);
-  }
-
-  const schema: JSONSchema7 = {
-    $schema: "http://json-schema.org/draft-07/schema#",
-    type: "object",
-    properties,
-    //required,
-    additionalProperties: false,
-  };
-
-  return schema;
-}
