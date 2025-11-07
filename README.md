@@ -13,6 +13,11 @@ This is not a fully fledged product or repository and should be treated as such.
 
 You are free to use this repository to try and tinker away as you please though! I still believe it is possible with more time to achieve a performant, stable and mostly deterministic solution, if you apply more software fallbacks to it (i.e. JSON validator, "Retry LLM call if output is faulty or not sufficient"). So if you want to fork, clone or copy it, just do it! :)
 
+The SpeechRecognition API also has been selected for demo purposes only. it usually sends the transcript to a Google Cloud server, so bare in mind that this will violate sensible data. If you want to use speech transcripts consider using things like
+- Vosk (JS/Python)
+- Whisper.cpp
+- Mozilla DeepSpeech
+
 ## Stack
 - Ollama (running models locally) - [Download here](https://ollama.com/)
     - mistral:latest
