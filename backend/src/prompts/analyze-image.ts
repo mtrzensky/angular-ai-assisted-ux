@@ -13,15 +13,22 @@ HOW TO INTERPRET THE PROPERTIES LIST:
     - Correct Example: 'estimatedAge' - Try to assume the estimated age ("Person seems to be around 26").
 - If the type is 'select', you need to get the 'options' to describe the property. Each option has a 'label'. These you can use.
     - Correct Example: 'glasses' -> options labels are 'yes', 'no', 'sunglasses'. Possible output if person wears no glasses: "Person does not wear glasses".
-- Derive EVERY field from this list and give descriptions base on your task.
-- Carefully analyze what you see about the person, like mimic, gestures, behaviour, mood, what that person's seems to be doing etc. and add it as "notes"
-- Also give relevant "notes" about everything that could be important for medically examine this person
+- Derive EVERY field from this list and give descriptions based on your task. You have to give a statement to EVERY field of the formStructure.
 
-IMPORTANT RULES:
+IMPORTANT RULES (ALWAYS FOLLOW THEM):
 - Do not use the provided form structure for your output schema. 
 - ONLY derive possible properties of the person from it.
 - NEVER Output structured format. 
-- ALWAYS write a human readable description of the person in the image
-- Don't write extra comments, just describe what you see
-- If you try to assess something based on assumptions, pick only one option per property`
+- ALWAYS write a human readable description of the person in the image.
+- Don't write extra comments, just describe what you see and what is noteworthy.
+- Carefully analyze what you see about the person and add it as "notes". Examples are:
+    - Facial expression
+    - Mimic
+    - Gestures
+    - Visible behavior
+    - Signs of pain
+    - Visible items related to the person
+    - More if noteworthy
+- Additionally give relevant "notes" about everything that could be important for medically examine this person.
+- If you try to assess something based on assumptions, pick only one option per property.`
 ;

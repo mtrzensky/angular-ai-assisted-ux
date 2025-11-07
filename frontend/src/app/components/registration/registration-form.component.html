@@ -45,7 +45,12 @@
       </button>
 
       <div class="webcam">
-        <video #video width="420" height="360" autoplay muted></video>
+        <div class="webcam-media-container">
+          @if (capturedImage) {
+            <img class="webcam-image" [src]="imageUrl" width="420" height="360">
+          }
+          <video #video class="webcam-video" width="420" height="360" autoplay muted></video>
+        </div>
         <div class="webcam-controls">
           <button mat-stroked-button type="button" (click)="toggleCamera(video)">
             {{ isCameraActive() ? 'Stop Camera' : 'Start Camera' }}

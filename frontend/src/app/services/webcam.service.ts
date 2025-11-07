@@ -12,6 +12,6 @@ export class WebcamService {
     canvas.height = videoEl.videoHeight;
     const ctx = canvas.getContext('2d')!;
     ctx.drawImage(videoEl, 0, 0);
-    return await new Promise<Blob>((resolve) => canvas.toBlob(resolve as any, 'image/png'));
+    return await new Promise<Blob>((resolve) => canvas.toBlob(resolve as BlobCallback, 'image/png'));
   }
 }
