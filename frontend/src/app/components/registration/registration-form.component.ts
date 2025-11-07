@@ -72,9 +72,11 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
     this.speech.transcript$.subscribe(async (txt) => {
       this.isProcessing.set(true);
       this.snackBar.open("Analyzing speech...", undefined, { duration: 3000 });
+
       console.log("Speech recognized:", txt);
       const res = await this.api.analyzeText(txt, formFieldsToJSONSchema(this.formFields)) as { parsed: Record<string, any> };
       this.applyParsedFields(res.parsed);
+
       this.snackBar.open("Analyzing complete!", undefined, { duration: 3000 });
       this.isProcessing.set(false);
     });
@@ -87,7 +89,7 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
     this.clearImage();
   }
 
-  applyParsedFields(parsed: any) {
+  applyParsedFields(parsed: Record<string, any>) {
     Object.keys(parsed || {}).forEach(k => {
       if (this.form.controls[k] && parsed[k] !== null) {
         this.form.controls[k].setValue(parsed[k]);
@@ -150,13 +152,17 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
   async captureAndAnalyze() {
     this.isProcessing.set(true);
     this.snackBar.open("Analyzing webcam picture...", undefined, { duration: 3000 });
+
     const blob = await this.webcam.captureFrame(this.videoRef);
     this.capturedImage = blob;
     this.objectUrl = URL.createObjectURL(blob);
     this.imageUrl = this.sanitizer.bypassSecurityTrustUrl(this.objectUrl);
+
     this.stopCamera();
+
     const res: any = await this.api.analyzeImage(blob, formFieldsToJSONSchema(this.formFields));
     this.snackBar.open("Analyzing complete!", undefined, { duration: 3000 });
+
     this.isProcessing.set(false);
     this.applyParsedFields(res.parsed);
   }

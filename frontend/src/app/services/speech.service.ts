@@ -17,12 +17,12 @@ export class SpeechService {
       this.recognition.interimResults = false;
       this.recognition.continuous = true;
 
-      this.recognition.onresult = (ev: any) => {
+      this.recognition.onresult = (ev: SpeechRecognitionEvent) => {
         this.processTranscript(ev);
         console.log("Speech result received.", ev);
       };
 
-      this.recognition.onerror = (ev: any) => {
+      this.recognition.onerror = (ev: SpeechRecognitionErrorEvent) => {
         console.error("Speech error", ev);
       };
 
@@ -48,9 +48,9 @@ export class SpeechService {
     this.isRecording.set(false);
   }
 
-  processTranscript(ev: any) {
+  processTranscript(ev: SpeechRecognitionEvent) {
     const txt = Array.from(ev.results)
-          .map((r: any) => r[0].transcript)
+          .map((r: SpeechRecognitionResult) => r[0].transcript)
           .join(' \n');
     this.transcriptBuffer = txt;
   }
