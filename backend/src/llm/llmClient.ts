@@ -9,7 +9,7 @@ const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
  * @param format The format of the output
  * @param options Additional options (e.g. temperature, max tokens, etc.)
  */
-export async function callLLM(model: string, prompt: string | JSONSchema7 = '', format: string, options: Record<string, any> = {}): Promise<string> {
+export async function callLLM(model: string, prompt: string, format: string | JSONSchema7 = '', options: Record<string, any> = {}): Promise<string> {
   if (typeof prompt !== "string") {
     throw new Error(`Ollama requires "prompt" to be a string. Got: ${typeof prompt}`);
   }
