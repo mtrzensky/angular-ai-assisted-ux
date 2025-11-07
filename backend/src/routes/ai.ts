@@ -47,8 +47,8 @@ router.post("/analyze-image", upload.single("image"), async (req, res) => {
     });
     const result = await callLLM('mistral', analyzeTextPrompt(imageResult, formStructure), JSON.parse(formStructure), {
       temperature: 0.0,
-      top_p: 0,
-      num_ctx: 8192,
+      top_p: 0.1,
+      num_ctx: 10240,
       num_predict: 512,
     });
 
