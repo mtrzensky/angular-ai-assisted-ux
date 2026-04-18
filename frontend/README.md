@@ -17,7 +17,8 @@ You are free to use this repository to try and tinker away as you please though!
 - Ollama (running models locally) - [Download here](https://ollama.com/)
     - mistral:latest
     - gemma3:12b
-- Angular v20
+- Local Whisper server (OpenAI-compatible API). Recommended: [speaches](https://github.com/speaches-ai/speaches) / `faster-whisper-server`
+- Angular v20 with `@ngx-translate/core` (de/en, runtime language switch, translations bundled — no network fetch)
 - Express
 
 ## How to run
@@ -28,6 +29,10 @@ ollama pull gemma3:12b
 
 ollama run mistral:latest
 ollama run gemma3:15b
+
+
+# Local Whisper — just start the container; the backend auto-pulls the model on first run
+docker run --rm -p 8000:8000 ghcr.io/speaches-ai/speaches:latest-cpu
 
 
 # Backend
@@ -70,7 +75,5 @@ npm run start
     - We will use this to inject our prompts with form data context. Ollama natively supports JSONSchema7 to produce JSON output.
 - `frontend/src/app/services` - Our data and communication service
     - `api.service.ts` - REST Api Service
-    - `speech.service.ts` - Service using the SpeechRecognition API from your browser (needed for voice transcript)
-        - You can change the language you want to detect and transcript here
+    - `speech.service.ts` - Records microphone audio via the MediaRecorder API and sends the blob to the backend for local Whisper transcription
     - `webcam.service.ts`- Service to control the WebCam stream and capture images from it
-- `frontend/src/app/types/speech.d.ts` - SpeechRecognition types

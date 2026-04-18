@@ -12,46 +12,54 @@ export interface FormFieldSelectOption {
 }
 
 export const formFieldsUsingText: FormField[] = [
-  { label: 'First Name', formControlName: 'firstname', placeholder: 'First Name', type: 'text', },
-  { label: 'Last Name', formControlName: 'lastname', placeholder: 'Last Name', type: 'text' },
-  { label: 'Date of Birth', formControlName: 'dob', placeholder: 'YYYY-MM-DD', type: 'text' },
-  { label: 'Estimated Age', formControlName: 'estimatedAge', placeholder: 'Estimated age (years)', type: 'number' },
-  { label: 'Height (cm)', formControlName: 'height', placeholder: 'Height in cm', type: 'number' },
-  { label: 'Weight (kg)', formControlName: 'weight', placeholder: 'Weight in kg', type: 'number' },
-  { label: 'Eye Color', formControlName: 'eye_color', placeholder: 'Eye Color', type: 'text' },
-  { label: 'Hair Color / Style', formControlName: 'hair_color', placeholder: 'Hair Color and Style', type: 'text' },
-  { label: 'Clothing / Outfit', formControlName: 'clothing', placeholder: 'Describe clothing', type: 'textarea' },
-  { label: 'Distinguishing Marks', formControlName: 'marks', placeholder: 'Scars, tattoos, glasses...', type: 'textarea' },
-  { label: 'Mobility / Assistance', formControlName: 'mobility', placeholder: 'Walking, wheelchair, needs help', type: 'text' },
-  { label: 'Allergies / Meds (known)', formControlName: 'allergies', placeholder: 'Known allergies / meds', type: 'textarea' },
-  { label: 'Chief complaint / Notes', formControlName: 'notes', placeholder: 'Short clinical notes', type: 'textarea' }
+  { label: 'fields.firstname.label', formControlName: 'firstname', placeholder: 'fields.firstname.placeholder', type: 'text' },
+  { label: 'fields.lastname.label', formControlName: 'lastname', placeholder: 'fields.lastname.placeholder', type: 'text' },
+  { label: 'fields.estimatedAge.label', formControlName: 'estimatedAge', placeholder: 'fields.estimatedAge.placeholder', type: 'number' },
+  { label: 'fields.eye_color.label', formControlName: 'eye_color', placeholder: 'fields.eye_color.placeholder', type: 'text' },
+  { label: 'fields.hair_color.label', formControlName: 'hair_color', placeholder: 'fields.hair_color.placeholder', type: 'text' },
+  { label: 'fields.notes.label', formControlName: 'notes', placeholder: 'fields.notes.placeholder', type: 'textarea' },
 ];
 
 export const formFieldsUsingSelects: FormField[] = [
-  { label: 'First Name', formControlName: 'firstname', placeholder: 'First Name', type: 'text' },
-  { label: 'Last Name', formControlName: 'lastname', placeholder: 'Last Name', type: 'text' },
-  { label: 'Estimated Age', formControlName: 'estimatedAge', placeholder: 'Estimated age', type: 'select', options: [
-    { value: '0-12', label: 'Child (0-12)' },
-    { value: '13-19', label: 'Teen (13-19)' },
-    { value: '20-39', label: 'Young Adult (20-39)' },
-    { value: '40-64', label: 'Adult (40-64)' },
-    { value: '65+', label: 'Senior (65+)' },
-  ] },
-  { label: 'Eye Color', formControlName: 'eye_color', placeholder: 'Eye Color', type: 'select', options: [
-    { value: 'blue', label: 'Blue' }, { value: 'brown', label: 'Brown' }, { value: 'green', label: 'Green'}, { value:'other', label:'Other' }
-  ]},
-  { label: 'Hair Color', formControlName: 'hair_color', placeholder: 'Hair Color', type: 'select', options: [
-    { value: 'black', label: 'Black' }, { value: 'brown', label: 'Brown' }, { value: 'blonde', label: 'Blonde' }, { value: 'gray', label: 'Gray' }, { value:'other', label:'Other' }
-  ]},
-  /*{ label: 'Visible Wounds', formControlName: 'visible_wounds', placeholder: 'Visible Wounds', type: 'select', options: [
-    { value: 'no', label: 'No' }, { value: 'yes_upper', label: 'Yes, upper body' }, { value: 'yes_lower', label: 'Yes, lower body'}
-  ]},
-  { label: 'Glasses', formControlName: 'glasses', placeholder: 'Wearing glasses?', type: 'select', options: [
-    { value: 'no', label: 'No' }, { value: 'yes', label: 'Yes' }, { value: 'sunglasses', label: 'Sunglasses' }
-  ]},
-  { label: 'Mobility', formControlName: 'mobility', placeholder: 'Mobility', type: 'select', options: [
-    { value: 'walking', label: 'Walking' }, { value: 'wheelchair', label: 'Wheelchair' }, { value: 'bedridden', label: 'Bedridden' }
-  ]},
-  { label: 'Clothing Type', formControlName: 'clothing', placeholder: 'Clothing', type: 'text' },*/
-  { label: 'Notes', formControlName: 'notes', placeholder: 'Clinical / extra notes', type: 'textarea' }
+  { label: 'fields.firstname.label', formControlName: 'firstname', placeholder: 'fields.firstname.placeholder', type: 'text' },
+  { label: 'fields.lastname.label', formControlName: 'lastname', placeholder: 'fields.lastname.placeholder', type: 'text' },
+  {
+    label: 'fields.estimatedAge.label',
+    formControlName: 'estimatedAge',
+    placeholder: 'fields.estimatedAge.placeholder',
+    type: 'select',
+    options: [
+      { value: '0-12', label: 'options.estimatedAge.0-12' },
+      { value: '13-19', label: 'options.estimatedAge.13-19' },
+      { value: '20-39', label: 'options.estimatedAge.20-39' },
+      { value: '40-64', label: 'options.estimatedAge.40-64' },
+      { value: '65+', label: 'options.estimatedAge.65+' },
+    ],
+  },
+  {
+    label: 'fields.eye_color.label',
+    formControlName: 'eye_color',
+    placeholder: 'fields.eye_color.placeholder',
+    type: 'select',
+    options: [
+      { value: 'blue', label: 'options.eye_color.blue' },
+      { value: 'brown', label: 'options.eye_color.brown' },
+      { value: 'green', label: 'options.eye_color.green' },
+      { value: 'other', label: 'options.eye_color.other' },
+    ],
+  },
+  {
+    label: 'fields.hair_color.label',
+    formControlName: 'hair_color',
+    placeholder: 'fields.hair_color.placeholder',
+    type: 'select',
+    options: [
+      { value: 'black', label: 'options.hair_color.black' },
+      { value: 'brown', label: 'options.hair_color.brown' },
+      { value: 'blonde', label: 'options.hair_color.blonde' },
+      { value: 'gray', label: 'options.hair_color.gray' },
+      { value: 'other', label: 'options.hair_color.other' },
+    ],
+  },
+  { label: 'fields.notes.label', formControlName: 'notes', placeholder: 'fields.notes.placeholder', type: 'textarea' },
 ];

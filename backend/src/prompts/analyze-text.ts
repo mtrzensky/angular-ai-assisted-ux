@@ -1,4 +1,9 @@
-export const analyzeTextPrompt = (text: string, formStructure: string) => `
+import { AppLanguage, LANGUAGE_NAMES } from "../i18n";
+
+export const analyzeTextPrompt = (text: string, formStructure: unknown, language: AppLanguage = "de") => {
+  const formStructureStr =
+    typeof formStructure === "string" ? formStructure : JSON.stringify(formStructure, null, 2);
+  return `
 You are a reasoning model that converts descriptive or visual text into structured form data.
 
 You must output a **valid JSON object** strictly based on the provided form structure.
@@ -6,10 +11,13 @@ You must output a **valid JSON object** strictly based on the provided form stru
 ---
 
 ### FORM STRUCTURE
-${formStructure}
+${formStructureStr}
 
 ### USER INPUT
 ${text}
+
+### USER LANGUAGE
+The user input may be written in ${LANGUAGE_NAMES[language]}. Understand ${LANGUAGE_NAMES[language]} synonyms and map them to the English enum values defined in the form structure (e.g. German "blau" -> "blue", "blond" -> "blonde", "grau" -> "gray", "laufen"/"stehen" -> "walking"). Select-type enum values must always be returned in their original (English) form as declared in the form structure.
 
 ---
 
@@ -25,8 +33,8 @@ Follow these rules exactly:
 2. **Data typing**
    - Use correct types:
      - For "number": return an integer or float, without quotes.
-     - For "text" or "textarea": return a lowercase descriptive string.
-     - For "select": return only the exact option **value** from the form structure.
+     - For "text" or "textarea": return a lowercase descriptive string. Keep it in the user's language (${LANGUAGE_NAMES[language]}).
+     - For "select": return only the exact option **value** from the form structure (English enum value).
 
 3. **Select field logic**
    For every select-type field:
@@ -44,14 +52,14 @@ Follow these rules exactly:
    - Step 5: Otherwise, output \`null\`.
 
 4. **Avoid guessing or invention**
-   - Prioritize textclues about form field names. Fill the data derived from the text inside the form field provided by textclue. 
+   - Prioritize textclues about form field names. Fill the data derived from the text inside the form field provided by textclue.
      - Example: "The first name is Mike" -> "first name" is a clue for "firstname".
      - Example: "Age is around 35 years old" -> "age" is a clue for "estimatedAge".
    - Do NOT infer names, firstnames, lastnames, or any personal data that is not visible in the text.
    - In terms of names read for hints of spelling. If a person is spelling the firstname or lastname, there will be letters divided by spaces. You will write down the name EXACTLY as spelled out letter by letter WITHOUT spaces.
     - **CORRECT** example: "The name is spelled h u s t o n" -> "lastname: Huston".
     - **INCORRECT** example: "the name is spelled j o n a s" -> "lastname: j o n s".
-   - If the text contains "unknown", "not visible", "none", or similar phrases, ALWAYS set the corresponding field to \`null\`.
+   - If the text contains "unknown", "not visible", "none", or similar phrases (including their ${LANGUAGE_NAMES[language]} equivalents like "unbekannt", "nicht sichtbar", "keine"), ALWAYS set the corresponding field to \`null\`.
 
 5. **Output format**
    - Output a single JSON object.
@@ -137,3 +145,4 @@ Incorrect:
 
 Now, generate only a JSON object for the given input text.
 `;
+};

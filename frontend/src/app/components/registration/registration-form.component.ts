@@ -1,8 +1,9 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { Form, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { SpeechService } from '../../services/speech.service';
 import { WebcamService } from '../../services/webcam.service';
+import { LanguageService } from '../../services/language.service';
 import { Subject } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,9 +11,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
-import { FormField, formFieldsUsingSelects, formFieldsUsingText } from '../../models/formData';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { FormField, formFieldsUsingSelects } from '../../models/formData';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { formFieldsToJSONSchema } from '../../functions/form-fields-to-json-schema';
 
@@ -29,7 +31,8 @@ import { formFieldsToJSONSchema } from '../../functions/form-fields-to-json-sche
     MatIconModule,
     ReactiveFormsModule,
     MatSelectModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    TranslateModule,
   ],
 })
 export class RegistrationFormComponent implements OnInit, OnDestroy {
@@ -38,7 +41,9 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
   private api: ApiService = inject(ApiService);
   private webcam: WebcamService = inject(WebcamService);
   private snackBar: MatSnackBar = inject(MatSnackBar);
+  private translate: TranslateService = inject(TranslateService);
   speech = inject(SpeechService);
+  language = inject(LanguageService);
 
   formFields = formFieldsUsingSelects;
 
@@ -52,7 +57,6 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  // signals for UI state
   isCameraActive = signal(false);
   isProcessing = signal(false);
 
@@ -71,13 +75,12 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.speech.transcript$.subscribe(async (txt) => {
       this.isProcessing.set(true);
-      this.snackBar.open("Analyzing speech...", undefined, { duration: 3000 });
+      this.snackBar.open(this.translate.instant('status.analyzingSpeech'), undefined, { duration: 3000 });
 
-      console.log("Speech recognized:", txt);
       const res = await this.api.analyzeText(txt, formFieldsToJSONSchema(this.formFields)) as { parsed: Record<string, any> };
       this.applyParsedFields(res.parsed);
 
-      this.snackBar.open("Analyzing complete!", undefined, { duration: 3000 });
+      this.snackBar.open(this.translate.instant('status.analyzingComplete'), undefined, { duration: 3000 });
       this.isProcessing.set(false);
     });
   }
@@ -102,9 +105,9 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
     this.clearImage();
   }
 
-  toggleRecording() {
+  async toggleRecording() {
     if (!this.speech.isRecording()) {
-      this.speech.start();
+      await this.speech.start();
     } else {
       this.speech.stop();
     }
@@ -151,7 +154,7 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
 
   async captureAndAnalyze() {
     this.isProcessing.set(true);
-    this.snackBar.open("Analyzing webcam picture...", undefined, { duration: 3000 });
+    this.snackBar.open(this.translate.instant('status.analyzingImage'), undefined, { duration: 3000 });
 
     const blob = await this.webcam.captureFrame(this.videoRef);
     this.capturedImage = blob;
@@ -161,7 +164,7 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
     this.stopCamera();
 
     const res: any = await this.api.analyzeImage(blob, formFieldsToJSONSchema(this.formFields));
-    this.snackBar.open("Analyzing complete!", undefined, { duration: 3000 });
+    this.snackBar.open(this.translate.instant('status.analyzingComplete'), undefined, { duration: 3000 });
 
     this.isProcessing.set(false);
     this.applyParsedFields(res.parsed);

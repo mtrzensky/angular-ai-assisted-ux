@@ -1,13 +1,22 @@
-<h1>Medical Profiling</h1>
+<div class="header">
+  <h1>{{ 'app.title' | translate }}</h1>
+  <mat-form-field appearance="outline" class="language-picker">
+    <mat-label>{{ 'language.label' | translate }}</mat-label>
+    <mat-select [value]="language.current()" (selectionChange)="language.set($event.value)">
+      <mat-option value="de">{{ 'language.de' | translate }}</mat-option>
+      <mat-option value="en">{{ 'language.en' | translate }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
 <form [formGroup]="form" class="form">
   <div class="form-segment">
-    @for (formField of formFields; track formField) {
+    @for (formField of formFields; track formField.formControlName) {
       @if (formField.type === 'select' && formField.options) {
         <mat-form-field appearance="outline" class="full">
-          <mat-label>{{ formField.label }}</mat-label>
+          <mat-label>{{ formField.label | translate }}</mat-label>
           <mat-select [formControlName]="formField.formControlName">
-            @for (option of formField.options; track option) {
-              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            @for (option of formField.options; track option.value) {
+              <mat-option [value]="option.value">{{ option.label | translate }}</mat-option>
             }
           </mat-select>
         </mat-form-field>
@@ -15,21 +24,21 @@
 
       @if (formField.type === 'text') {
         <mat-form-field appearance="outline" class="full">
-          <mat-label>{{ formField.label }}</mat-label>
+          <mat-label>{{ formField.label | translate }}</mat-label>
           <input matInput [formControlName]="formField.formControlName">
         </mat-form-field>
       }
 
       @if (formField.type === 'number') {
         <mat-form-field appearance="outline" class="full">
-          <mat-label>{{ formField.label }}</mat-label>
+          <mat-label>{{ formField.label | translate }}</mat-label>
           <input matInput type="number" [formControlName]="formField.formControlName">
         </mat-form-field>
       }
-      
-      @if (formField.type === 'textarea') { 
+
+      @if (formField.type === 'textarea') {
         <mat-form-field appearance="outline" class="full">
-          <mat-label>{{ formField.label }}</mat-label>
+          <mat-label>{{ formField.label | translate }}</mat-label>
           <textarea matInput [formControlName]="formField.formControlName" rows="3"></textarea>
         </mat-form-field>
       }
@@ -38,10 +47,11 @@
   <div class="form-segment">
     <div class="controls">
       <button mat-flat-button color="warn" type="button" (click)="resetForm()">
-        Reset Form
+        {{ 'controls.resetForm' | translate }}
       </button>
       <button mat-stroked-button type="button" (click)="toggleRecording()">
-        <mat-icon>mic</mat-icon> {{ speech.isRecording() ? 'Stop' : 'Record' }}
+        <mat-icon>mic</mat-icon>
+        {{ (speech.isRecording() ? 'controls.stop' : 'controls.record') | translate }}
       </button>
 
       <div class="webcam">
@@ -53,9 +63,11 @@
         </div>
         <div class="webcam-controls">
           <button mat-stroked-button type="button" (click)="toggleCamera(video)">
-            {{ isCameraActive() ? 'Stop Camera' : 'Start Camera' }}
+            {{ (isCameraActive() ? 'controls.stopCamera' : 'controls.startCamera') | translate }}
           </button>
-          <button [disabled]="!isCameraActive()" mat-stroked-button type="button" (click)="captureAndAnalyze()">Capture & Analyze</button>
+          <button [disabled]="!isCameraActive()" mat-stroked-button type="button" (click)="captureAndAnalyze()">
+            {{ 'controls.captureAnalyze' | translate }}
+          </button>
         </div>
       </div>
     </div>

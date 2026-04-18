@@ -30,10 +30,6 @@ export function formFieldsToJSONSchema(formFields: FormField[]): JSONSchema7 {
         break;
     }
 
-    if (field.placeholder) {
-      fieldSchema.description = field.placeholder;
-    }
-
     properties[field.formControlName] = fieldSchema;
     //required.push(field.formControlName);
   }
