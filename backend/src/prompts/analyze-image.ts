@@ -1,8 +1,8 @@
 import { AppLanguage, LANGUAGE_NAMES } from "../i18n";
+import { stringifyFormStructure } from "./formStructure";
 
 export const analyzeImagePrompt = (formStructure: unknown, language: AppLanguage = "de") => {
-  const formStructureStr =
-    typeof formStructure === "string" ? formStructure : JSON.stringify(formStructure, null, 2);
+  const formStructureStr = stringifyFormStructure(formStructure);
   return `
 You are a multimodal reasoning model working in a medicine/hospital context. You receive a photo of a person and must output a **valid JSON object** strictly matching the provided form structure.
 

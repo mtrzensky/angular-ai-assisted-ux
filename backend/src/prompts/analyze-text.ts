@@ -1,8 +1,8 @@
 import { AppLanguage, LANGUAGE_NAMES } from "../i18n";
+import { stringifyFormStructure } from "./formStructure";
 
 export const analyzeTextPrompt = (text: string, formStructure: unknown, language: AppLanguage = "de") => {
-  const formStructureStr =
-    typeof formStructure === "string" ? formStructure : JSON.stringify(formStructure, null, 2);
+  const formStructureStr = stringifyFormStructure(formStructure);
   return `
 You are a reasoning model that converts descriptive or visual text into structured form data.
 

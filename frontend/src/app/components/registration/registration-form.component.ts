@@ -1,10 +1,6 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { ApiService } from '../../services/api.service';
-import { SpeechService } from '../../services/speech.service';
-import { WebcamService } from '../../services/webcam.service';
-import { LanguageService } from '../../services/language.service';
-import { Subject } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,9 +10,16 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { FormField, formFieldsUsingSelects } from '../../models/formData';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+
+import { AnalyzeResponse, ApiService } from '../../services/api.service';
+import { SpeechService } from '../../services/speech.service';
+import { WebcamService } from '../../services/webcam.service';
+import { LanguageService } from '../../services/language.service';
+import { FormField, formFieldsUsingSelects } from '../../models/formData';
 import { formFieldsToJSONSchema } from '../../functions/form-fields-to-json-schema';
+
+const SNACKBAR_DURATION_MS = 3000;
 
 @Component({
   selector: 'app-registration-form',
@@ -36,68 +39,42 @@ import { formFieldsToJSONSchema } from '../../functions/form-fields-to-json-sche
   ],
 })
 export class RegistrationFormComponent implements OnInit, OnDestroy {
-  private sanitizer: DomSanitizer = inject(DomSanitizer);
-  private fb: FormBuilder = inject(FormBuilder);
-  private api: ApiService = inject(ApiService);
-  private webcam: WebcamService = inject(WebcamService);
-  private snackBar: MatSnackBar = inject(MatSnackBar);
-  private translate: TranslateService = inject(TranslateService);
-  speech = inject(SpeechService);
-  language = inject(LanguageService);
+  private readonly sanitizer = inject(DomSanitizer);
+  private readonly fb = inject(FormBuilder);
+  private readonly api = inject(ApiService);
+  private readonly webcam = inject(WebcamService);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly translate = inject(TranslateService);
+  readonly speech = inject(SpeechService);
+  readonly language = inject(LanguageService);
 
-  formFields = formFieldsUsingSelects;
+  readonly formFields = formFieldsUsingSelects;
+  readonly form: FormGroup = this.buildForm(this.formFields);
 
-  form: FormGroup = this.buildForm(this.formFields);
+  readonly isCameraActive = signal(false);
+  readonly isProcessing = signal(false);
 
   capturedImage: Blob | null = null;
-
   imageUrl: SafeUrl | null = null;
+  videoStream?: MediaStream;
 
   private objectUrl: string | null = null;
-
-  private destroy$ = new Subject<void>();
-
-  isCameraActive = signal(false);
-  isProcessing = signal(false);
-
-  videoStream?: MediaStream;
-  videoRef!: HTMLVideoElement;
-
-  buildForm(formFields: FormField[]) {
-    const group: Record<string, string[]> = {};
-    formFields.forEach(field => {
-      group[field.formControlName] = [''];
-    });
-
-    return this.fb.group(group);
-  }
+  private videoRef?: HTMLVideoElement;
+  private readonly destroy$ = new Subject<void>();
 
   ngOnInit() {
-    this.speech.transcript$.subscribe(async (txt) => {
-      this.isProcessing.set(true);
-      this.snackBar.open(this.translate.instant('status.analyzingSpeech'), undefined, { duration: 3000 });
-
-      const res = await this.api.analyzeText(txt, formFieldsToJSONSchema(this.formFields)) as { parsed: Record<string, any> };
-      this.applyParsedFields(res.parsed);
-
-      this.snackBar.open(this.translate.instant('status.analyzingComplete'), undefined, { duration: 3000 });
-      this.isProcessing.set(false);
+    this.speech.transcript$.pipe(takeUntil(this.destroy$)).subscribe((txt) => {
+      void this.runAnalysis('status.analyzingSpeech', () =>
+        this.api.analyzeText(txt, formFieldsToJSONSchema(this.formFields)),
+      );
     });
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-    this.videoStream?.getTracks().forEach(t => t.stop());
+    this.stopCamera();
     this.clearImage();
-  }
-
-  applyParsedFields(parsed: Record<string, any>) {
-    Object.keys(parsed || {}).forEach(k => {
-      if (this.form.controls[k] && parsed[k] !== null) {
-        this.form.controls[k].setValue(parsed[k]);
-      }
-    });
   }
 
   resetForm() {
@@ -106,37 +83,68 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
   }
 
   async toggleRecording() {
-    if (!this.speech.isRecording()) {
-      await this.speech.start();
-    } else {
+    if (this.speech.isRecording()) {
       this.speech.stop();
+    } else {
+      await this.speech.start();
     }
   }
 
-  toggleCamera(videoEl: HTMLVideoElement) {
+  async toggleCamera(videoEl: HTMLVideoElement) {
     if (this.isCameraActive()) {
       this.stopCamera();
-    } else {
-      this.startCamera(videoEl).then(() => {
-        this.isCameraActive.set(true);
-      });
+      return;
+    }
+    await this.startCamera(videoEl);
+    this.isCameraActive.set(true);
+  }
+
+  async captureAndAnalyze() {
+    if (!this.videoRef) return;
+
+    const blob = await this.webcam.captureFrame(this.videoRef);
+    this.setCapturedImage(blob);
+    this.stopCamera();
+
+    await this.runAnalysis('status.analyzingImage', () =>
+      this.api.analyzeImage(blob, formFieldsToJSONSchema(this.formFields)),
+    );
+  }
+
+  private buildForm(formFields: FormField[]): FormGroup {
+    const group: Record<string, string[]> = {};
+    for (const field of formFields) {
+      group[field.formControlName] = [''];
+    }
+    return this.fb.group(group);
+  }
+
+  private async runAnalysis(statusKey: string, request: () => Promise<AnalyzeResponse>) {
+    this.isProcessing.set(true);
+    this.notify(statusKey);
+    try {
+      const { parsed } = await request();
+      this.applyParsedFields(parsed);
+      this.notify('status.analyzingComplete');
+    } finally {
+      this.isProcessing.set(false);
     }
   }
 
-  stopCamera() {
-    if (this.videoStream) {
-      this.videoStream.getTracks().forEach(track => track.stop());
-      this.videoStream = undefined;
-    }
-
-    if (this.videoRef) {
-      this.videoRef.srcObject = null;
-    }
-
-    this.isCameraActive.set(false);
+  private notify(translationKey: string) {
+    this.snackBar.open(this.translate.instant(translationKey), undefined, {
+      duration: SNACKBAR_DURATION_MS,
+    });
   }
 
-  async startCamera(videoEl: HTMLVideoElement) {
+  private applyParsedFields(parsed: Record<string, unknown>) {
+    for (const [key, value] of Object.entries(parsed ?? {})) {
+      const control = this.form.controls[key];
+      if (control && value !== null) control.setValue(value);
+    }
+  }
+
+  private async startCamera(videoEl: HTMLVideoElement) {
     this.clearImage();
     this.videoRef = videoEl;
     this.videoStream = await this.webcam.getStream();
@@ -144,29 +152,24 @@ export class RegistrationFormComponent implements OnInit, OnDestroy {
     await videoEl.play();
   }
 
-  private clearImage() {
-    if (this.capturedImage && this.objectUrl) {
-      URL.revokeObjectURL(this.objectUrl);
-    }
-    this.capturedImage = null;
-    this.objectUrl = null;
+  private stopCamera() {
+    this.videoStream?.getTracks().forEach((t) => t.stop());
+    this.videoStream = undefined;
+    if (this.videoRef) this.videoRef.srcObject = null;
+    this.isCameraActive.set(false);
   }
 
-  async captureAndAnalyze() {
-    this.isProcessing.set(true);
-    this.snackBar.open(this.translate.instant('status.analyzingImage'), undefined, { duration: 3000 });
-
-    const blob = await this.webcam.captureFrame(this.videoRef);
+  private setCapturedImage(blob: Blob) {
+    this.clearImage();
     this.capturedImage = blob;
     this.objectUrl = URL.createObjectURL(blob);
     this.imageUrl = this.sanitizer.bypassSecurityTrustUrl(this.objectUrl);
+  }
 
-    this.stopCamera();
-
-    const res: any = await this.api.analyzeImage(blob, formFieldsToJSONSchema(this.formFields));
-    this.snackBar.open(this.translate.instant('status.analyzingComplete'), undefined, { duration: 3000 });
-
-    this.isProcessing.set(false);
-    this.applyParsedFields(res.parsed);
+  private clearImage() {
+    if (this.objectUrl) URL.revokeObjectURL(this.objectUrl);
+    this.capturedImage = null;
+    this.imageUrl = null;
+    this.objectUrl = null;
   }
 }

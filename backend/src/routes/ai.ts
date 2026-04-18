@@ -1,16 +1,30 @@
-import express from "express";
+import express, { Request, Response, RequestHandler } from "express";
 import upload from "../middleware/upload";
 import { callLLM } from "../llm/llmClient";
 import { transcribeAudio } from "../llm/whisperClient";
+import { IMAGE_ANALYSIS_OPTIONS, LLM_MODEL, TEXT_ANALYSIS_OPTIONS } from "../llm/options";
 import { analyzeImagePrompt } from "../prompts/analyze-image";
 import { analyzeTextPrompt } from "../prompts/analyze-text";
-import { resolveLanguage, t } from "../i18n";
+import { AppLanguage, resolveLanguage, t } from "../i18n";
 
 const router = express.Router();
 
-router.post("/transcribe-audio", upload.single("audio"), async (req, res) => {
+type LocalizedHandler = (req: Request, res: Response, language: AppLanguage) => Promise<unknown>;
+
+const handle = (fn: LocalizedHandler): RequestHandler => async (req, res) => {
   const language = resolveLanguage(req.body?.language);
   try {
+    await fn(req, res, language);
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+router.post(
+  "/transcribe-audio",
+  upload.single("audio"),
+  handle(async (req, res, language) => {
     if (!req.file) return res.status(400).json({ error: t(language, "audioRequired") });
 
     const text = await transcribeAudio(
@@ -21,72 +35,43 @@ router.post("/transcribe-audio", upload.single("audio"), async (req, res) => {
     );
 
     res.json({ text });
-  } catch (err: any) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-});
+  })
+);
 
-router.post("/analyze-text", async (req, res) => {
-  const language = resolveLanguage(req.body?.language);
-  try {
+router.post(
+  "/analyze-text",
+  handle(async (req, res, language) => {
     const { text, formStructure } = req.body;
     if (!text || !formStructure) return res.status(400).json({ error: t(language, "textRequired") });
 
     const prompt = analyzeTextPrompt(text, formStructure, language);
-
-    const result = await callLLM('qwen3.5:9b', prompt, formStructure, {
+    const result = await callLLM(LLM_MODEL, prompt, formStructure, {
       think: false,
-      options: {
-        temperature: 0.0,
-        top_p: 1.0,
-        top_k: 1,
-        seed: 42,
-        repeat_penalty: 1.0,
-        num_ctx: 4096,
-        num_predict: 512,
-      },
+      options: TEXT_ANALYSIS_OPTIONS,
     });
 
     res.json({ parsed: JSON.parse(result) });
-  } catch (err: any) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-});
+  })
+);
 
-
-router.post("/analyze-image", upload.single("image"), async (req, res) => {
-  const language = resolveLanguage(req.body?.language);
-  try {
+router.post(
+  "/analyze-image",
+  upload.single("image"),
+  handle(async (req, res, language) => {
     const formStructure = req.body.formStructure;
-
     if (!req.file) return res.status(400).json({ error: t(language, "imageRequired") });
     if (!formStructure) return res.status(400).json({ error: t(language, "formStructureRequired") });
 
-    const b64 = req.file.buffer.toString("base64");
     const parsedFormStructure = JSON.parse(formStructure);
     const prompt = analyzeImagePrompt(parsedFormStructure, language);
-
-    const result = await callLLM('qwen3.5:9b', prompt, parsedFormStructure, {
-      images: [b64],
+    const result = await callLLM(LLM_MODEL, prompt, parsedFormStructure, {
+      images: [req.file.buffer.toString("base64")],
       think: false,
-      options: {
-        temperature: 0.0,
-        top_p: 1.0,
-        top_k: 1,
-        seed: 42,
-        repeat_penalty: 1.0,
-        num_ctx: 8192,
-        num_predict: 512,
-      },
+      options: IMAGE_ANALYSIS_OPTIONS,
     });
 
     res.json({ parsed: JSON.parse(result) });
-  } catch (err: any) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-});
+  })
+);
 
 export default router;
