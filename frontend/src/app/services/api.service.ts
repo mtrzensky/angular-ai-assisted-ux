@@ -4,32 +4,47 @@ import { firstValueFrom } from 'rxjs';
 import { JSONSchema7 } from 'json-schema';
 import { LanguageService } from './language.service';
 
+export interface AnalyzeResponse {
+  parsed: Record<string, unknown>;
+}
+
+export interface TranscribeResponse {
+  text: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private base = 'http://localhost:3000/api/ai';
-  private language = inject(LanguageService);
+  private readonly base = 'http://localhost:3000/api/ai';
+  private readonly http = inject(HttpClient);
+  private readonly language = inject(LanguageService);
 
-  constructor(private http: HttpClient) {}
-
-  analyzeText(text: string, formStructure: JSONSchema7) {
+  analyzeText(text: string, formStructure: JSONSchema7): Promise<AnalyzeResponse> {
     return firstValueFrom(
-      this.http.post(`${this.base}/analyze-text`, { text, formStructure, language: this.language.get() }),
+      this.http.post<AnalyzeResponse>(`${this.base}/analyze-text`, {
+        text,
+        formStructure,
+        language: this.language.get(),
+      }),
     );
   }
 
-  analyzeImage(file: Blob, formStructure: JSONSchema7) {
-    const fd = new FormData();
-    fd.append('image', file, 'capture.png');
+  analyzeImage(file: Blob, formStructure: JSONSchema7): Promise<AnalyzeResponse> {
+    const fd = this.buildFormData({ image: [file, 'capture.png'] });
     fd.append('formStructure', JSON.stringify(formStructure));
-    fd.append('language', this.language.get());
-
-    return firstValueFrom(this.http.post(`${this.base}/analyze-image`, fd));
+    return firstValueFrom(this.http.post<AnalyzeResponse>(`${this.base}/analyze-image`, fd));
   }
 
-  transcribeAudio(audio: Blob, filename = 'audio.webm') {
+  transcribeAudio(audio: Blob, filename = 'audio.webm'): Promise<TranscribeResponse> {
+    const fd = this.buildFormData({ audio: [audio, filename] });
+    return firstValueFrom(this.http.post<TranscribeResponse>(`${this.base}/transcribe-audio`, fd));
+  }
+
+  private buildFormData(files: Record<string, [Blob, string]>): FormData {
     const fd = new FormData();
-    fd.append('audio', audio, filename);
+    for (const [key, [blob, name]] of Object.entries(files)) {
+      fd.append(key, blob, name);
+    }
     fd.append('language', this.language.get());
-    return firstValueFrom(this.http.post<{ text: string }>(`${this.base}/transcribe-audio`, fd));
+    return fd;
   }
 }

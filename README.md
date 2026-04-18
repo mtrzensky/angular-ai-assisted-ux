@@ -19,20 +19,16 @@ The UI supports German and English — switch languages with the picker in the h
 
 ## Stack
 - Ollama (running models locally) - [Download here](https://ollama.com/)
-    - mistral:latest
-    - gemma3:12b
+    - qwen3.5:9b — single multimodal model used for both text and image analysis
 - Local Whisper server (OpenAI-compatible API). Recommended: [speaches](https://github.com/speaches-ai/speaches) / `faster-whisper-server`
-- Angular v20
+- Angular v20 with `@ngx-translate/core` (de/en, runtime language switch, translations bundled — no network fetch)
 - Express
 
 ## How to run
 ```
-# AI models
-ollama pull mistral:latest
-ollama pull gemma3:12b
-
-ollama run mistral:latest
-ollama run gemma3:15b
+# AI model
+ollama pull qwen3.5:9b
+ollama run qwen3.5:9b
 
 
 # Local Whisper (speech-to-text) — runs on :8000, OpenAI-compatible API
@@ -66,34 +62,39 @@ The frontend language (`de` | `en`) is selected in the header, persisted in `loc
 
 ## How to use
 - The stack runs on these ports
-    - localhost:11434 - Ollama (You can change it via ENV file and a OLLAMA_URL var)
+    - localhost:11434 - Ollama (You can change it via ENV file and a `OLLAMA_URL` var)
     - localhost:4200 - Angular frontend - Use it within your browser!
     - localhost:3000 - Express backend
 - The stack also expects a local Whisper server at `localhost:8000` (see "Whisper configuration" above)
 - You can edit the `formData.ts` file with fields as you desire. In default the AI will respect your new fields
 - You can edit prompts with
-    - `analyze-image.ts` - Prompts for gemma3:12b image detection
-    - `analyze-text.ts` - Prompts for mistral:latest text structure
+    - `analyze-image.ts` - Prompt used for image analysis
+    - `analyze-text.ts` - Prompt used for structured text extraction
 
 ## Structure
 ### Backend
-- `backend/src/llm/llmClient.ts` - This is the LLM Client that communicates with our models
-- `backend/src/llm/whisperClient.ts` - Client for the local Whisper server (speech-to-text)
-- `backend/src/middleware/upload.ts` - This is a middleware using "multer" to process uploaded images and audio
-- `backend/src/routes/ai.ts` - Our REST endpoints
-    - `/analyze-text` - Endpoint for our mistral:latest text model
-    - `/analyze-image` - Endpoint for our gemma3:12b multimodal model
-    - `/transcribe-audio` - Endpoint forwarding recorded audio to the local Whisper server
+- `backend/src/llm/llmClient.ts` - Thin client that POSTs to the Ollama `/api/generate` endpoint
+- `backend/src/llm/options.ts` - Shared model id (`LLM_MODEL`) and deterministic sampling options reused by every endpoint
+- `backend/src/llm/whisperClient.ts` - Client for the local Whisper server (speech-to-text), incl. first-run model pull
+- `backend/src/middleware/upload.ts` - `multer` in-memory storage for image / audio uploads
+- `backend/src/prompts/analyze-text.ts` / `analyze-image.ts` - Prompt builders, parameterised by language
+- `backend/src/prompts/formStructure.ts` - Small helper shared by both prompt builders
+- `backend/src/i18n.ts` - App language type, language resolution and translated error messages
+- `backend/src/routes/ai.ts` - REST endpoints, wrapped in a single error-handling helper
+    - `/analyze-text` - Text → structured JSON (Qwen 3.5 9B)
+    - `/analyze-image` - Image → structured JSON (Qwen 3.5 9B, multimodal)
+    - `/transcribe-audio` - Audio → text (Whisper)
 
 ### Frontend
-- `frontend/src` - Starting point with app mount and Angular Material `styles.scss` config  
+- `frontend/src` - Starting point with app mount and Angular Material `styles.scss` config
 - `frontend/src/app/components/registration` - Folder of our profiling form
 - `frontend/src/app/models/formData.ts` - Our form fields. Readily typed
     - You have 2 different form field as default objects to show you, how the LLMs perform with `text` type fields vs. `select` type fields
     - This should give you an idea about some deterministic limitations and probably solution ideas you can build on
-- `frontend/src/app/functions/form-fields-to-json-schema.ts` - Function to parse our form field objects
-    - We will use this to inject our prompts with form data context. Ollama natively supports JSONSchema7 to produce JSON output.
-- `frontend/src/app/services` - Our data and communication service
-    - `api.service.ts` - REST Api Service
+- `frontend/src/app/functions/form-fields-to-json-schema.ts` - Maps `FormField[]` to a JSONSchema7 object (Ollama consumes this as the `format` hint)
+- `frontend/src/app/services` - Data and communication services
+    - `api.service.ts` - Typed REST client (`AnalyzeResponse`, `TranscribeResponse`)
     - `speech.service.ts` - Records microphone audio via the `MediaRecorder` API and posts the blob to the backend for local Whisper transcription
-    - `webcam.service.ts`- Service to control the WebCam stream and capture images from it
+    - `webcam.service.ts` - Controls the WebCam stream and captures images from it
+    - `language.service.ts` - Current UI language signal, `localStorage` persistence, wires `@ngx-translate/core`
+- `frontend/src/app/i18n` - Bundled `de` / `en` translations and a sync `TranslateLoader`
