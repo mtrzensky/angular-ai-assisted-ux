@@ -2,6 +2,18 @@
 mat-form-field.full { width: 100%; }
 mat-form-field { flex: 1; min-width: 180px; }
 
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.language-picker {
+  min-width: 140px;
+  max-width: 180px;
+}
+
 .form {
   display:flex;
   gap: 2rem;

@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import aiRoutes from "./routes/ai";
+import { ensureWhisperModel } from "./llm/whisperClient";
 
 dotenv.config();
 
@@ -18,4 +19,9 @@ app.use("/api/ai", aiRoutes);
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 app.listen(PORT, () => {
   console.log(`Backend listening on http://localhost:${PORT}`);
+
+  ensureWhisperModel().catch((err) => {
+    console.warn(`[whisper] model could not be pre-pulled: ${err.message}`);
+    console.warn(`[whisper] will retry on the first transcription request.`);
+  });
 });

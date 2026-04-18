@@ -13,7 +13,9 @@ This is not a fully fledged product or repository and should be treated as such.
 
 You are free to use this repository to try and tinker away as you please though! I still believe it is possible with more time to achieve a performant, stable and mostly deterministic solution, if you apply more software fallbacks to it (i.e. JSON validator, "Retry LLM call if output is faulty or not sufficient"). So if you want to fork, clone or copy it, just do it! :)
 
-Voice transcription runs fully locally via a Whisper-compatible HTTP server. The browser's SpeechRecognition API is no longer used; the frontend records audio with the `MediaRecorder` API and the backend forwards the blob to Whisper for on-device transcription (German by default).
+Voice transcription runs fully locally via a Whisper-compatible HTTP server. The browser's SpeechRecognition API is no longer used; the frontend records audio with the `MediaRecorder` API and the backend forwards the blob to Whisper for on-device transcription.
+
+The UI supports German and English — switch languages with the picker in the header. The selected language is forwarded to Whisper (for transcription) and to the LLM (for natural-language output). All enum values in the form structure stay English so JSON extraction remains stable across locales.
 
 ## Stack
 - Ollama (running models locally) - [Download here](https://ollama.com/)
@@ -34,12 +36,9 @@ ollama run gemma3:15b
 
 
 # Local Whisper (speech-to-text) — runs on :8000, OpenAI-compatible API
-# Option A: Docker (simplest)
+# Option A: Docker (simplest — just start it, the backend auto-pulls the model on first run)
 docker run --rm -p 8000:8000 ghcr.io/speaches-ai/speaches:latest-cpu
 # Option B: any other Whisper server exposing POST /v1/audio/transcriptions
-
-# Speaches does not ship the Whisper model pre-installed — pull it once:
-curl -X POST "http://localhost:8000/v1/models/Systran/faster-whisper-small"
 
 
 # Backend
@@ -58,7 +57,12 @@ npm run start
 The backend reads these env vars (all optional):
 - `WHISPER_URL` (default `http://localhost:8000`)
 - `WHISPER_MODEL` (default `Systran/faster-whisper-small`)
-- `WHISPER_LANGUAGE` (default `de`)
+- `WHISPER_LANGUAGE` (default `de`) — fallback when the frontend does not send a language
+
+The backend auto-pulls `WHISPER_MODEL` on startup (and again on a 404 during the first transcription) so no manual `POST /v1/models/...` is required.
+
+### UI language
+The frontend language (`de` | `en`) is selected in the header, persisted in `localStorage`, and forwarded with every backend request (`language` field in JSON / multipart). The backend uses it for Whisper transcription and for a short language instruction appended to the LLM prompts. Prompts themselves stay in English for best model performance.
 
 ## How to use
 - The stack runs on these ports

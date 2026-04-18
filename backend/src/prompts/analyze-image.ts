@@ -1,4 +1,6 @@
-export const analyzeImagePrompt = (formStructure: string) => `
+import { AppLanguage, LANGUAGE_NAMES } from "../i18n";
+
+export const analyzeImagePrompt = (formStructure: string, language: AppLanguage = "de") => `
 You receive a base64-encoded image (as data). Your job is to analyze and describe the person in the picture.
 Describe visual features of the person and make a profile of that person.
 
@@ -16,9 +18,9 @@ HOW TO INTERPRET THE PROPERTIES LIST:
 - Derive EVERY field from this list and give descriptions based on your task. You have to give a statement to EVERY field of the formStructure.
 
 IMPORTANT RULES (ALWAYS FOLLOW THEM):
-- Do not use the provided form structure for your output schema. 
+- Do not use the provided form structure for your output schema.
 - ONLY derive possible properties of the person from it.
-- NEVER Output structured format. 
+- NEVER Output structured format.
 - ALWAYS write a human readable description of the person in the image.
 - Don't write extra comments, just describe what you see and what is noteworthy.
 - Carefully analyze what you see about the person and add it as "notes". Examples are:
@@ -30,5 +32,8 @@ IMPORTANT RULES (ALWAYS FOLLOW THEM):
     - Visible items related to the person
     - More if noteworthy
 - Additionally give relevant "notes" about everything that could be important for medically examine this person.
-- If you try to assess something based on assumptions, pick only one option per property.`
+- If you try to assess something based on assumptions, pick only one option per property.
+
+OUTPUT LANGUAGE:
+- Write the entire human-readable description in ${LANGUAGE_NAMES[language]}.`
 ;
