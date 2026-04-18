@@ -1,5 +1,5 @@
 # Angular and AI-Driven UX: AI assisted User Interactions
-This is the demo presented at the NG-DE 2025 Conference in Berlin by Mario Trzensky
+This is the updated demo first presented at the NG-DE 2025 Conference in Berlin by Mario Trzensky and updated for JAX 2026.
 
 ## IMPORTANT DISCLAIMER
 This demo's purpose is to give you a starting idea on how you could work with LLMs and Angular within a product context, how you can configure it locally and feed it with context data dynamically.
