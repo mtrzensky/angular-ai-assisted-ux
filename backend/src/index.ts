@@ -5,8 +5,13 @@ import aiRoutes from "./routes/ai";
 
 dotenv.config();
 
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:4200")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 const app = express();
-app.use(cors());
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json({ limit: "10mb" }));
 app.use("/api/ai", aiRoutes);
 
