@@ -36,10 +36,12 @@ router.post("/analyze-text", async (req, res) => {
     const prompt = analyzeTextPrompt(text, formStructure, language);
 
     const result = await callLLM('mistral', prompt, formStructure, {
-      temperature: 0.0,
-      top_p: 0.1,
-      num_ctx: 10240,
-      num_predict: 512,
+      options: {
+        temperature: 0.0,
+        top_p: 0.1,
+        num_ctx: 10240,
+        num_predict: 512,
+      },
     });
 
     res.json({ parsed: JSON.parse(result) });
@@ -61,18 +63,15 @@ router.post("/analyze-image", upload.single("image"), async (req, res) => {
     const b64 = req.file.buffer.toString("base64");
     const prompt = analyzeImagePrompt(formStructure, language);
 
-    const imageResult = await callLLM('gemma3:12b', prompt, '', {
-      temperature: 0.0,
-      top_p: 0.2,
-      num_ctx: 16384,
-      num_predict: 1024,
-      images: [b64]
-    });
-    const result = await callLLM('mistral', analyzeTextPrompt(imageResult, formStructure, language), JSON.parse(formStructure), {
-      temperature: 0.0,
-      top_p: 0.1,
-      num_ctx: 10240,
-      num_predict: 512,
+    const result = await callLLM('qwen3.5:9b', prompt, JSON.parse(formStructure), {
+      images: [b64],
+      think: false,
+      options: {
+        temperature: 0.0,
+        top_p: 0.2,
+        num_ctx: 16384,
+        num_predict: 1024,
+      },
     });
 
     res.json({ parsed: JSON.parse(result) });

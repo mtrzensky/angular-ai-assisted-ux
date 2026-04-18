@@ -2,30 +2,65 @@ import { JSONSchema7 } from "json-schema";
 
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
 
-/**
- * Calls a locally running Ollama model with the given prompt.
- * @param model Name of the ollama model, e.g. "llama3", "mistral", "codellama"
- * @param prompt The text prompt you want to send
- * @param format The format of the output
- * @param options Additional options (e.g. temperature, max tokens, etc.)
- */
-export async function callLLM(model: string, prompt: string, format: string | JSONSchema7 = '', options: Record<string, any> = {}): Promise<string> {
+export type OllamaModelOptions = {
+  temperature?: number;
+  top_p?: number;
+  top_k?: number;
+  min_p?: number;
+  typical_p?: number;
+  repeat_last_n?: number;
+  repeat_penalty?: number;
+  presence_penalty?: number;
+  frequency_penalty?: number;
+  penalize_newline?: boolean;
+  stop?: string[];
+  seed?: number;
+  num_ctx?: number;
+  num_predict?: number;
+  num_batch?: number;
+  num_gpu?: number;
+  main_gpu?: number;
+  num_thread?: number;
+  num_keep?: number;
+  numa?: boolean;
+  use_mmap?: boolean;
+};
+
+export type CallLLMParams = {
+  images?: string[];
+  system?: string;
+  think?: boolean;
+  keep_alive?: string | number;
+  raw?: boolean;
+  suffix?: string;
+  options?: OllamaModelOptions;
+};
+
+export async function callLLM(
+  model: string,
+  prompt: string,
+  format: string | JSONSchema7 = "",
+  params: CallLLMParams = {}
+): Promise<string> {
   if (typeof prompt !== "string") {
     throw new Error(`Ollama requires "prompt" to be a string. Got: ${typeof prompt}`);
   }
 
-  const body = {
+  const { options, ...topLevel } = params;
+
+  const body: Record<string, unknown> = {
     model,
     prompt,
     stream: false,
-    format,
-    ...options
+    ...topLevel,
   };
+  if (format) body.format = format;
+  if (options) body.options = options;
 
   const res = await fetch(`${OLLAMA_URL}/api/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) {

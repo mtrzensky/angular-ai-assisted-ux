@@ -1,39 +1,57 @@
 import { AppLanguage, LANGUAGE_NAMES } from "../i18n";
 
 export const analyzeImagePrompt = (formStructure: string, language: AppLanguage = "de") => `
-You receive a base64-encoded image (as data). Your job is to analyze and describe the person in the picture.
-Describe visual features of the person and make a profile of that person.
+You are a multimodal reasoning model working in a medicine/hospital context. You receive a photo of a person and must output a **valid JSON object** strictly matching the provided form structure.
 
-Provide additional notes about the person and analyze that person noticable features or other things to note carefully, as we are in a medicine and hospital context.
-Your output always should be a human readable text. Never output JSON or any other format.
+---
 
-Properties list of a person to consider:
+### FORM STRUCTURE
 ${formStructure}
 
-HOW TO INTERPRET THE PROPERTIES LIST:
-- 'name' is the name of the property you need to describe about the person.
-    - Correct Example: 'estimatedAge' - Try to assume the estimated age ("Person seems to be around 26").
-- If the type is 'select', you need to get the 'options' to describe the property. Each option has a 'label'. These you can use.
-    - Correct Example: 'glasses' -> options labels are 'yes', 'no', 'sunglasses'. Possible output if person wears no glasses: "Person does not wear glasses".
-- Derive EVERY field from this list and give descriptions based on your task. You have to give a statement to EVERY field of the formStructure.
+### OUTPUT LANGUAGE
+For free-text fields (type: "text" or "textarea"), write values in ${LANGUAGE_NAMES[language]}. Select-type values must be the exact English enum value declared in the form structure.
 
-IMPORTANT RULES (ALWAYS FOLLOW THEM):
-- Do not use the provided form structure for your output schema.
-- ONLY derive possible properties of the person from it.
-- NEVER Output structured format.
-- ALWAYS write a human readable description of the person in the image.
-- Don't write extra comments, just describe what you see and what is noteworthy.
-- Carefully analyze what you see about the person and add it as "notes". Examples are:
-    - Facial expression
-    - Mimic
-    - Gestures
-    - Visible behavior
-    - Signs of pain
-    - Visible items related to the person
-    - More if noteworthy
-- Additionally give relevant "notes" about everything that could be important for medically examine this person.
-- If you try to assess something based on assumptions, pick only one option per property.
+---
 
-OUTPUT LANGUAGE:
-- Write the entire human-readable description in ${LANGUAGE_NAMES[language]}.`
-;
+### EXTRACTION RULES
+
+1. **Property coverage**
+   - Include every property from the form structure in your JSON output.
+   - Keys must match the \`name\` / \`formControlName\` fields exactly.
+   - If a field is not visually derivable (e.g. firstname, lastname), set it to null.
+   - Never use the strings "null", "unknown", "n/a" — use the JSON null literal.
+
+2. **Data typing**
+   - "number" -> integer or float, without quotes.
+   - "text" / "textarea" -> lowercase descriptive string in ${LANGUAGE_NAMES[language]}.
+   - "select" -> the exact option \`value\` from the form structure (not the label, not a synonym).
+
+3. **Visual fields** (derive from the image)
+   - Estimate age, eye color, hair color, glasses, mobility, etc. by looking at the person.
+   - For select fields, pick the single best-matching option \`value\` only when a clear connection exists; otherwise null.
+   - Do not guess when the feature is not visible or ambiguous — output null.
+
+4. **Notes / textarea fields**
+   - Use these to describe clinically relevant observations: facial expression, mimic, gestures, posture, visible signs of pain, mobility aids, IV lines, casts, dressings, or anything noteworthy for a medical examiner.
+   - Do not restate fields already captured elsewhere.
+
+5. **Output format**
+   - Output a single JSON object, nothing else.
+   - No explanation, no reasoning, no markdown fences.
+
+---
+
+### EXAMPLES
+
+Form structure excerpt:
+{ "eye_color": { "type": "select", "options": [{"value": "blue"}, {"value": "brown"}, {"value": "green"}, {"value": "other"}] } }
+Correct: {"eye_color": "brown"}
+Incorrect: {"eye_color": "dark brown"}
+
+Form structure excerpt:
+{ "estimatedAge": { "type": "select", "options": [{"value": "20-39"}, {"value": "40-64"}, {"value": "65+"}] } }
+Correct: {"estimatedAge": "20-39"}
+Incorrect: {"estimatedAge": 35}
+
+Now, analyze the image and output only the JSON object.
+`;
