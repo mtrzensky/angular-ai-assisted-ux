@@ -61,9 +61,10 @@ router.post("/analyze-image", upload.single("image"), async (req, res) => {
     if (!formStructure) return res.status(400).json({ error: t(language, "formStructureRequired") });
 
     const b64 = req.file.buffer.toString("base64");
-    const prompt = analyzeImagePrompt(formStructure, language);
+    const parsedFormStructure = JSON.parse(formStructure);
+    const prompt = analyzeImagePrompt(parsedFormStructure, language);
 
-    const result = await callLLM('qwen3.5:9b', prompt, JSON.parse(formStructure), {
+    const result = await callLLM('qwen3.5:9b', prompt, parsedFormStructure, {
       images: [b64],
       think: false,
       options: {

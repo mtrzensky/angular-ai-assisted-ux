@@ -1,12 +1,15 @@
 import { AppLanguage, LANGUAGE_NAMES } from "../i18n";
 
-export const analyzeImagePrompt = (formStructure: string, language: AppLanguage = "de") => `
+export const analyzeImagePrompt = (formStructure: unknown, language: AppLanguage = "de") => {
+  const formStructureStr =
+    typeof formStructure === "string" ? formStructure : JSON.stringify(formStructure, null, 2);
+  return `
 You are a multimodal reasoning model working in a medicine/hospital context. You receive a photo of a person and must output a **valid JSON object** strictly matching the provided form structure.
 
 ---
 
 ### FORM STRUCTURE
-${formStructure}
+${formStructureStr}
 
 ### OUTPUT LANGUAGE
 For free-text fields (type: "text" or "textarea"), write values in ${LANGUAGE_NAMES[language]}. Select-type values must be the exact English enum value declared in the form structure.
@@ -55,3 +58,4 @@ Incorrect: {"estimatedAge": 35}
 
 Now, analyze the image and output only the JSON object.
 `;
+};

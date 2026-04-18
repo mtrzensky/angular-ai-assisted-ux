@@ -1,6 +1,9 @@
 import { AppLanguage, LANGUAGE_NAMES } from "../i18n";
 
-export const analyzeTextPrompt = (text: string, formStructure: string, language: AppLanguage = "de") => `
+export const analyzeTextPrompt = (text: string, formStructure: unknown, language: AppLanguage = "de") => {
+  const formStructureStr =
+    typeof formStructure === "string" ? formStructure : JSON.stringify(formStructure, null, 2);
+  return `
 You are a reasoning model that converts descriptive or visual text into structured form data.
 
 You must output a **valid JSON object** strictly based on the provided form structure.
@@ -8,7 +11,7 @@ You must output a **valid JSON object** strictly based on the provided form stru
 ---
 
 ### FORM STRUCTURE
-${formStructure}
+${formStructureStr}
 
 ### USER INPUT
 ${text}
@@ -142,3 +145,4 @@ Incorrect:
 
 Now, generate only a JSON object for the given input text.
 `;
+};
