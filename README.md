@@ -13,15 +13,13 @@ This is not a fully fledged product or repository and should be treated as such.
 
 You are free to use this repository to try and tinker away as you please though! I still believe it is possible with more time to achieve a performant, stable and mostly deterministic solution, if you apply more software fallbacks to it (i.e. JSON validator, "Retry LLM call if output is faulty or not sufficient"). So if you want to fork, clone or copy it, just do it! :)
 
-The SpeechRecognition API also has been selected for demo purposes only. it usually sends the transcript to a Google Cloud server, so bare in mind that this will violate sensible data. If you want to use speech transcripts consider using things like
-- Vosk (JS/Python)
-- Whisper.cpp
-- Mozilla DeepSpeech
+Voice transcription runs fully locally via a Whisper-compatible HTTP server. The browser's SpeechRecognition API is no longer used; the frontend records audio with the `MediaRecorder` API and the backend forwards the blob to Whisper for on-device transcription (German by default).
 
 ## Stack
 - Ollama (running models locally) - [Download here](https://ollama.com/)
     - mistral:latest
     - gemma3:12b
+- Local Whisper server (OpenAI-compatible API). Recommended: [speaches](https://github.com/speaches-ai/speaches) / `faster-whisper-server`
 - Angular v20
 - Express
 
@@ -33,6 +31,15 @@ ollama pull gemma3:12b
 
 ollama run mistral:latest
 ollama run gemma3:15b
+
+
+# Local Whisper (speech-to-text) — runs on :8000, OpenAI-compatible API
+# Option A: Docker (simplest)
+docker run --rm -p 8000:8000 ghcr.io/speaches-ai/speaches:latest-cpu
+# Option B: any other Whisper server exposing POST /v1/audio/transcriptions
+
+# Speaches does not ship the Whisper model pre-installed — pull it once:
+curl -X POST "http://localhost:8000/v1/models/Systran/faster-whisper-small"
 
 
 # Backend
@@ -47,11 +54,18 @@ npm install
 npm run start
 ```
 
+### Whisper configuration
+The backend reads these env vars (all optional):
+- `WHISPER_URL` (default `http://localhost:8000`)
+- `WHISPER_MODEL` (default `Systran/faster-whisper-small`)
+- `WHISPER_LANGUAGE` (default `de`)
+
 ## How to use
 - The stack runs on these ports
     - localhost:11434 - Ollama (You can change it via ENV file and a OLLAMA_URL var)
     - localhost:4200 - Angular frontend - Use it within your browser!
     - localhost:3000 - Express backend
+- The stack also expects a local Whisper server at `localhost:8000` (see "Whisper configuration" above)
 - You can edit the `formData.ts` file with fields as you desire. In default the AI will respect your new fields
 - You can edit prompts with
     - `analyze-image.ts` - Prompts for gemma3:12b image detection
@@ -60,10 +74,12 @@ npm run start
 ## Structure
 ### Backend
 - `backend/src/llm/llmClient.ts` - This is the LLM Client that communicates with our models
-- `backend/src/middleware/upload.ts` - This is a middleware using "multer" to process base64 images
+- `backend/src/llm/whisperClient.ts` - Client for the local Whisper server (speech-to-text)
+- `backend/src/middleware/upload.ts` - This is a middleware using "multer" to process uploaded images and audio
 - `backend/src/routes/ai.ts` - Our REST endpoints
     - `/analyze-text` - Endpoint for our mistral:latest text model
-    - `/analyze.image` - Endpoint for our gemma3:12b multimodal model
+    - `/analyze-image` - Endpoint for our gemma3:12b multimodal model
+    - `/transcribe-audio` - Endpoint forwarding recorded audio to the local Whisper server
 
 ### Frontend
 - `frontend/src` - Starting point with app mount and Angular Material `styles.scss` config  
@@ -75,7 +91,5 @@ npm run start
     - We will use this to inject our prompts with form data context. Ollama natively supports JSONSchema7 to produce JSON output.
 - `frontend/src/app/services` - Our data and communication service
     - `api.service.ts` - REST Api Service
-    - `speech.service.ts` - Service using the SpeechRecognition API from your browser (needed for voice transcript)
-        - You can change the language you want to detect and transcript here
+    - `speech.service.ts` - Records microphone audio via the `MediaRecorder` API and posts the blob to the backend for local Whisper transcription
     - `webcam.service.ts`- Service to control the WebCam stream and capture images from it
-- `frontend/src/app/types/speech.d.ts` - SpeechRecognition types

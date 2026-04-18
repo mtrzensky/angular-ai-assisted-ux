@@ -20,4 +20,10 @@ export class ApiService {
 
     return firstValueFrom(this.http.post(`${this.base}/analyze-image`, fd));
   }
+
+  transcribeAudio(audio: Blob, filename = 'audio.webm') {
+    const fd = new FormData();
+    fd.append('audio', audio, filename);
+    return firstValueFrom(this.http.post<{ text: string }>(`${this.base}/transcribe-audio`, fd));
+  }
 }

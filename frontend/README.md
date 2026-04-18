@@ -70,7 +70,5 @@ npm run start
     - We will use this to inject our prompts with form data context. Ollama natively supports JSONSchema7 to produce JSON output.
 - `frontend/src/app/services` - Our data and communication service
     - `api.service.ts` - REST Api Service
-    - `speech.service.ts` - Service using the SpeechRecognition API from your browser (needed for voice transcript)
-        - You can change the language you want to detect and transcript here
+    - `speech.service.ts` - Records microphone audio via the MediaRecorder API and sends the blob to the backend for local Whisper transcription
     - `webcam.service.ts`- Service to control the WebCam stream and capture images from it
-- `frontend/src/app/types/speech.d.ts` - SpeechRecognition types

@@ -1,10 +1,28 @@
 import express from "express";
 import upload from "../middleware/upload";
 import { callLLM } from "../llm/llmClient";
+import { transcribeAudio } from "../llm/whisperClient";
 import { analyzeImagePrompt } from "../prompts/analyze-image";
 import { analyzeTextPrompt } from "../prompts/analyze-text";
 
 const router = express.Router();
+
+router.post("/transcribe-audio", upload.single("audio"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "audio required" });
+
+    const text = await transcribeAudio(
+      req.file.buffer,
+      req.file.originalname || "audio.webm",
+      req.file.mimetype || "audio/webm"
+    );
+
+    res.json({ text });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 router.post("/analyze-text", async (req, res) => {
   try {
