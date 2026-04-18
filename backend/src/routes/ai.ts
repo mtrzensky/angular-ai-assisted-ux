@@ -35,7 +35,8 @@ router.post("/analyze-text", async (req, res) => {
 
     const prompt = analyzeTextPrompt(text, formStructure, language);
 
-    const result = await callLLM('mistral', prompt, formStructure, {
+    const result = await callLLM('qwen3.5:9b', prompt, formStructure, {
+      think: false,
       options: {
         temperature: 0.0,
         top_p: 0.1,
