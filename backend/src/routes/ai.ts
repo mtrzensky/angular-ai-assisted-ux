@@ -39,8 +39,11 @@ router.post("/analyze-text", async (req, res) => {
       think: false,
       options: {
         temperature: 0.0,
-        top_p: 0.1,
-        num_ctx: 10240,
+        top_p: 1.0,
+        top_k: 1,
+        seed: 42,
+        repeat_penalty: 1.0,
+        num_ctx: 4096,
         num_predict: 512,
       },
     });
@@ -70,9 +73,12 @@ router.post("/analyze-image", upload.single("image"), async (req, res) => {
       think: false,
       options: {
         temperature: 0.0,
-        top_p: 0.2,
-        num_ctx: 16384,
-        num_predict: 1024,
+        top_p: 1.0,
+        top_k: 1,
+        seed: 42,
+        repeat_penalty: 1.0,
+        num_ctx: 8192,
+        num_predict: 512,
       },
     });
 
