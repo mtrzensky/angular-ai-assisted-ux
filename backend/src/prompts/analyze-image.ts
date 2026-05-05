@@ -1,9 +1,13 @@
 import { AppLanguage, LANGUAGE_NAMES } from "../i18n";
+import { CallLLMPrompt } from "../llm/llmClient";
 import { stringifyFormStructure } from "./formStructure";
 
-export const analyzeImagePrompt = (formStructure: unknown, language: AppLanguage = "de") => {
+export const analyzeImagePrompt = (
+  formStructure: unknown,
+  language: AppLanguage = "de"
+): CallLLMPrompt => {
   const formStructureStr = stringifyFormStructure(formStructure);
-  return `
+  const system = `
 You are a multimodal reasoning model working in a medicine/hospital context. You receive a photo of a person and must output a **valid JSON object** strictly matching the provided form structure.
 
 ---
@@ -41,7 +45,7 @@ For free-text fields (type: "text" or "textarea"), write values in ${LANGUAGE_NA
 5. **Output format**
    - Output a single JSON object, nothing else.
    - No explanation, no reasoning, no markdown fences.
-
+   
 ---
 
 ### EXAMPLES
@@ -58,4 +62,5 @@ Incorrect: {"estimatedAge": 35}
 
 Now, analyze the image and output only the JSON object.
 `;
+  return { system, user: "Analyze the attached image and output the JSON object." };
 };
