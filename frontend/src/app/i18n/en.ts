@@ -26,6 +26,10 @@ export const en = {
     estimatedAge: { label: 'Estimated Age', placeholder: 'Estimated age' },
     eye_color: { label: 'Eye Color', placeholder: 'Eye Color' },
     hair_color: { label: 'Hair Color', placeholder: 'Hair Color' },
+    mobility: { label: 'Mobility', placeholder: 'Mobility' },
+    glasses: { label: 'Eyewear', placeholder: 'Eyewear' },
+    pain_level: { label: 'Pain Level', placeholder: 'Visible pain level' },
+    skin_tone: { label: 'Skin Tone', placeholder: 'Skin tone / complexion' },
     notes: { label: 'Notes', placeholder: 'Clinical / extra notes' },
   },
   options: {
@@ -48,6 +52,30 @@ export const en = {
       blonde: 'Blonde',
       gray: 'Gray',
       other: 'Other',
+    },
+    mobility: {
+      independent: 'Independent',
+      walking_aid: 'Walking Aid',
+      wheelchair: 'Wheelchair',
+      bedridden: 'Bedridden',
+    },
+    glasses: {
+      none: 'None',
+      glasses: 'Glasses',
+      sunglasses: 'Sunglasses',
+    },
+    pain_level: {
+      none: 'None',
+      mild: 'Mild',
+      moderate: 'Moderate',
+      severe: 'Severe',
+    },
+    skin_tone: {
+      pale: 'Pale',
+      normal: 'Normal',
+      flushed: 'Flushed',
+      jaundiced: 'Jaundiced',
+      cyanotic: 'Cyanotic',
     },
   },
 };
