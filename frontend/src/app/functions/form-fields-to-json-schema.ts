@@ -6,7 +6,7 @@ function fieldToSchema(field: FormField): JSONSchema7 {
     case 'number':
       return { type: ['number', 'null'] };
     case 'select':
-      return { type: ['string', 'null'], enum: field.options?.map((o) => o.value) };
+      return { type: ['string', 'null'], enum: [...(field.options?.map((o) => o.value) ?? []), null] };
     case 'text':
     case 'textarea':
     default:
