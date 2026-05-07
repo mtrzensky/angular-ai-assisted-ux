@@ -28,7 +28,6 @@ export type OllamaModelOptions = {
 
 export type CallLLMParams = {
   images?: string[];
-  system?: string;
   think?: boolean;
   keep_alive?: string | number;
   raw?: boolean;
@@ -36,21 +35,27 @@ export type CallLLMParams = {
   options?: OllamaModelOptions;
 };
 
+export type CallLLMPrompt = {
+  system: string;
+  user: string;
+};
+
 export async function callLLM(
   model: string,
-  prompt: string,
+  prompt: CallLLMPrompt,
   format: string | JSONSchema7 = "",
   params: CallLLMParams = {}
 ): Promise<string> {
-  if (typeof prompt !== "string") {
-    throw new Error(`Ollama requires "prompt" to be a string. Got: ${typeof prompt}`);
+  if (typeof prompt?.system !== "string" || typeof prompt?.user !== "string") {
+    throw new Error(`callLLM requires { system, user } strings. Got: ${typeof prompt}`);
   }
 
   const { options, ...topLevel } = params;
 
   const body: Record<string, unknown> = {
     model,
-    prompt,
+    system: prompt.system,
+    prompt: prompt.user,
     stream: false,
     ...topLevel,
   };
